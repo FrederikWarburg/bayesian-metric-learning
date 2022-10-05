@@ -1,0 +1,7 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# folder specific
+lightning_logs
+results
+notebooks
