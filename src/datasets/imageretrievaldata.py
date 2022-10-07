@@ -9,33 +9,31 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         data_dir: str = "path/to/dir",
         batch_size: int = 32,
         workers=8,
-        training_dataset="mnist",
+        dataset="mnist",
         **args
     ):
         super().__init__()
 
         self.data_dir = data_dir
         self.batch_size = batch_size
-        self.training_dataset = training_dataset
+        self.dataset = dataset
         self.workers = workers
 
     def setup(self, stage="fit"):
 
-        transform = transforms.Compose([transforms.ToTensor()])
-
-        if self.training_dataset == "mnist":
+        if self.dataset == "mnist":
             from datasets.mnist import TrainDataset, TestDataset
-        elif self.train_dataset == "fashionmnist":
+        elif self.dataset == "fashionmnist":
             from datasets.fashionmnist import TrainDataset, TestDataset
-        elif self.train_dataset == "cub200":
+        elif self.dataset == "cub200":
             from datasets.cub200 import TrainDataset, TestDataset
 
         if stage == "fit":
-            self.train_dataset = TrainDataset(self.data_dir, transform)
-            self.val_dataset = TestDataset(self.data_dir, transform)
+            self.train_dataset = TrainDataset(self.data_dir)
+            self.val_dataset = TestDataset(self.data_dir)
 
         elif stage == "test":
-            self.test_dataset = TestDataset(self.data_dir, transform)
+            self.test_dataset = TestDataset(self.data_dir)
 
     def train_dataloader(self):
         return DataLoader(

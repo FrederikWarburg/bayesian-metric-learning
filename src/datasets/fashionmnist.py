@@ -1,10 +1,12 @@
 import torch.utils.data as data
 import torchvision
+from torchvision import transforms
 
 
 class TrainDataset(data.Dataset):
-    def __init__(self, root, transform):
+    def __init__(self, root):
 
+        transform = transforms.Compose([transforms.ToTensor()])
         self.data = torchvision.datasets.FashionMNIST(
             root, train=True, download=True, transform=transform
         )
@@ -20,7 +22,8 @@ class TrainDataset(data.Dataset):
 
 
 class TestDataset(data.Dataset):
-    def __init__(self, root, transform):
+    def __init__(self, root):
+        transform = transforms.Compose([transforms.ToTensor()])
         self.data = torchvision.datasets.FashionMNIST(
             root, train=False, download=True, transform=transform
         )

@@ -1,23 +1,21 @@
-import torchvision.datasets as d
-from src.data_modules.BaseDataModule import BaseDataModule
 from torchvision import transforms
 from torch.utils.data import Dataset
 import numpy as np
 import time
-import torch
 from PIL import Image
+import os
 
 
 class TrainDataset(Dataset):
-    def __init__(self, data_dir, npos=1, nneg=5):
+    def __init__(self, data_dir):
 
-        dataset_path = data_dir / "CUB_200_2011"
+        dataset_path = os.path.join(data_dir, "CUB_200_2011")
 
-        image_names = np.loadtxt(dataset_path / "images.txt", dtype=str)
+        image_names = np.loadtxt(os.path.join(dataset_path, "images.txt"), dtype=str)
         image_class_labels = np.loadtxt(
-            dataset_path / "image_class_labels.txt", dtype=int
+            os.path.join(dataset_path, "image_class_labels.txt"), dtype=int
         )
-        self.image_path = dataset_path / "images"
+        self.image_path = os.path.join(dataset_path, "images")
         self.labels = image_class_labels[:, 1]
         self.images = image_names[:, 1]
 
@@ -25,38 +23,12 @@ class TrainDataset(Dataset):
         self.labels = self.labels[idx]
         self.images = self.images[idx]
 
-        self.npos = npos
-        self.nneg = nneg
-        self.classes = np.unique(self.labels)
-
-        print("=> this is a bit slow, but only done once")
-        t = time.time()
-
-        self.idx = {}
-        for c in self.classes:
-            self.idx[f"{c}"] = {
-                "pos": np.where(self.labels == c)[0],
-                "neg": np.where(self.labels != c)[0],
-            }
-
-        self.pos_idx = []
-        self.neg_idx = []
-        for i in range(len(self.labels)):
-            key = f"{self.labels[i]}"
-
-            pos_idx = self.idx[key]["pos"]
-            pos_idx = pos_idx[pos_idx != i]  # remove self
-
-            neg_idx = self.idx[key]["neg"]
-
-            self.pos_idx.append(pos_idx)
-            self.neg_idx.append(neg_idx)
-        print("=> done in {:.2f}s".format(time.time() - t))
-
         self.transform = transforms.Compose(
             [
-                transforms.Resize(156),
-                transforms.RandomCrop(128),
+                #transforms.RandomRotation(10),
+                transforms.RandomResizedCrop(227, scale = (0.08, 1)),
+                #transforms.ColorJitter(),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
@@ -67,14 +39,10 @@ class TrainDataset(Dataset):
     def __len__(self):
         return len(self.labels)
 
-    def load_image(self, path):
-        im = Image.open(self.image_path / path).convert("RGB")
-        return self.transform(im)
-
     def __getitem__(self, idx):
 
         image = self.transform(
-            Image.open(self.image_path / self.images[idx]).convert("RGB")
+            Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB")
         )
         label = self.labels[idx]
 
@@ -82,14 +50,15 @@ class TrainDataset(Dataset):
 
 
 class TestDataset(Dataset):
-    def __init__(self, data_dir, npos=1, nneg=5):
+    def __init__(self, data_dir):
 
-        dataset_path = data_dir / "CUB_200_2011"
-        self.image_path = dataset_path / "images"
-        image_names = np.loadtxt(dataset_path / "images.txt", dtype=str)
+        dataset_path = os.path.join(data_dir, "CUB_200_2011")
+
+        image_names = np.loadtxt(os.path.join(dataset_path, "images.txt"), dtype=str)
         image_class_labels = np.loadtxt(
-            dataset_path / "image_class_labels.txt", dtype=int
+            os.path.join(dataset_path, "image_class_labels.txt"), dtype=int
         )
+        self.image_path = os.path.join(dataset_path, "images")
 
         self.labels = image_class_labels[:, 1]
         self.images = image_names[:, 1]
@@ -100,8 +69,8 @@ class TestDataset(Dataset):
 
         self.transform = transforms.Compose(
             [
-                transforms.Resize(156),
-                transforms.CenterCrop(128),
+                transforms.Resize(256),
+                transforms.CenterCrop(227),
                 transforms.ToTensor(),
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
@@ -115,7 +84,7 @@ class TestDataset(Dataset):
     def __getitem__(self, idx):
 
         image = self.transform(
-            Image.open(self.image_path / self.images[idx]).convert("RGB")
+            Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB")
         )
         label = self.labels[idx]
 

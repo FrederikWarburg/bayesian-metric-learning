@@ -5,29 +5,25 @@
 model : "deterministic"
 resume : ""
 arch : "resnet50"
-# latent_dim : 3
 pool : "gem"
+whitening : True
+pretrained : True
+latent_dim : 512
 
 # logging
 log_dir : "../results"
+check_val_every_n_epoch : 1
 
 # training
 train : True
-epochs : 20
-lr : 0.0001
+epochs : 10
+lr : 3.0e-7
 loss : "contrastive"
-margin : 0.7
+margin : 1
 distance : "euclidean"
 
 # data specific
-data_dir : "/data/MSLS"
-dataset : "msls"
-batch_size : 12
-image_size : 224
+data_dir : "/data/"
+dataset : "cub200"
+batch_size : 64
 split_query_database : False
-
-train_cities : "zurich"
-val_cities : "zurich"
-test_cities : "zurich"
-posDistThr : 10
-negDistThr : 25

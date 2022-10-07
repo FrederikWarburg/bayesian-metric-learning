@@ -2,13 +2,14 @@
 
 
 # model specific
-model : "deterministic"
+model : "pfe"
 resume : ""
 arch : "linear"
 latent_dim : 3
+resume : "../lightning_logs/mnist/deterministic/checkpoints/best.ckpt"
 
 # logging
-log_dir : "../results"
+check_val_every_n_epoch: 1
 
 # training
 train : True
