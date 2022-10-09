@@ -25,9 +25,9 @@ class TrainDataset(Dataset):
 
         self.transform = transforms.Compose(
             [
-                #transforms.RandomRotation(10),
-                transforms.RandomResizedCrop(227, scale = (0.08, 1)),
-                #transforms.ColorJitter(),
+                # transforms.RandomRotation(10),
+                transforms.RandomResizedCrop(227, scale=(0.08, 1)),
+                # transforms.ColorJitter(),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(

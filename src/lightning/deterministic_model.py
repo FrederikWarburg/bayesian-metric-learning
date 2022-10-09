@@ -2,7 +2,6 @@ from lightning.base import Base
 import torch
 
 
-
 class DeterministicModel(Base):
     def __init__(self, args):
         super().__init__(args)

@@ -12,7 +12,7 @@ class UncertaintyModule(nn.Module):
         super().__init__()
 
         self.backbone = model.backbone
-        self.fc_mu = model.linear 
+        self.fc_mu = model.linear
 
         # Freeze backbone parameters
         for param in self.backbone.parameters():
@@ -20,8 +20,7 @@ class UncertaintyModule(nn.Module):
 
         # Freeze backbone parameters
         for param in self.fc_mu.parameters():
-            param.requires_grad = False        
-        
+            param.requires_grad = False
 
         in_features = self.fc_mu[0].in_features
         latent_size = self.fc_mu[-2].out_features
@@ -41,8 +40,8 @@ class UncertaintyModule(nn.Module):
     def scale_and_shift(self, x):
         return self.gamma * x + self.beta
 
-    def forward(self, x):
-
+    def forward(self, x, n_samples=1):
+        
         b, c, h, w = x.shape
 
         # Non-trainable
@@ -59,13 +58,19 @@ class UncertaintyModule(nn.Module):
         log_var = self.scale_and_shift(log_var)
 
         sigma = (log_var * 0.5).exp()
+        
+        # sample from projected normal distribution
+        samples = mu.unsqueeze(1).repeat(1,n_samples,1) + torch.randn(b, n_samples, sigma.shape[-1], device=sigma.device) * sigma.unsqueeze(1).repeat(1,n_samples,1)
+        samples = samples / torch.norm(samples, dim=2, keepdim=True)
 
-        return {"z_mu" : mu, "z_sigma" : sigma}
+        return {"z_mu": mu, "z_sigma": sigma, "z_samples" : samples}
+
 
 def rename_keys(statedict):
 
-    new_dict = {k.replace("model.", "") : statedict[k] for k in statedict.keys()}
+    new_dict = {k.replace("model.", ""): statedict[k] for k in statedict.keys()}
     return new_dict
+
 
 class PfeModel(Base):
     def __init__(self, args):
@@ -78,16 +83,14 @@ class PfeModel(Base):
             print("fix path and try again.")
             sys.exit()
 
-        model = self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
-           
+        self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
 
         # encapsolate model in an uncertainty module
-        # and freeze deterministic part of model 
+        # and freeze deterministic part of model
         self.model = UncertaintyModule(self.model)
 
         # overwrite criterion with pfe loss
         self.criterion = PfeCriterion()
-
 
     def compute_loss(self, output, y, indices_tuple):
 

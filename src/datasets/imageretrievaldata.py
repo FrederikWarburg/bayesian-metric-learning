@@ -1,3 +1,4 @@
+from random import shuffle
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -25,15 +26,19 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
             from datasets.mnist import TrainDataset, TestDataset
         elif self.dataset == "fashionmnist":
             from datasets.fashionmnist import TrainDataset, TestDataset
+            from datasets.mnist import TestDataset as OODDataset
         elif self.dataset == "cub200":
             from datasets.cub200 import TrainDataset, TestDataset
 
         if stage == "fit":
             self.train_dataset = TrainDataset(self.data_dir)
             self.val_dataset = TestDataset(self.data_dir)
-
+            
         elif stage == "test":
             self.test_dataset = TestDataset(self.data_dir)
+
+        if self.dataset in ("fashionmnist"):
+            self.ood_dataset = OODDataset(self.data_dir)
 
     def train_dataloader(self):
         return DataLoader(
@@ -46,21 +51,45 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        return DataLoader(
+        dataloaders = [DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.workers,
             pin_memory=True,
             drop_last=False,
-        )
+        )]
+
+        if hasattr(self, "ood_dataset"):
+            dataloaders += [DataLoader(
+                self.ood_dataset,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.workers,
+                pin_memory=True,
+                drop_last=False,
+            )]
+
+        return dataloaders
 
     def test_dataloader(self):
-        return DataLoader(
+        dataloaders = [DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.workers,
             pin_memory=True,
             drop_last=False,
-        )
+        )]
+
+        if hasattr(self, "ood_dataset"):
+            dataloaders += [DataLoader(
+                self.ood_dataset,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.workers,
+                pin_memory=True,
+                drop_last=False,
+            )]
+
+        return dataloaders

@@ -1,3 +1,4 @@
+from dataclasses import field
 import pytorch_lightning as pl
 from models import configure_model, get_model_parameters
 import torchvision.transforms as transforms
@@ -9,17 +10,18 @@ from losses.loss import configure_metric_loss
 from pytorch_metric_learning import distances
 import wandb
 import torchvision
-from evaluate.functionals import (
+from evaluate.utils import (
     get_pos_idx,
-    evaluate,
-    compute_rank,
     get_pos_idx_place_recognition,
     remove_duplicates,
 )
+from evaluate.evaluate import evaluate, evaluate_uncertainties
+from evaluate.ranking import compute_rank
 from pytorch_metric_learning import miners
 import torch
 from miners.custom_miners import TripletMarginMiner
-
+import json
+import os
 
 class Base(pl.LightningModule):
     def __init__(self, args):
@@ -27,6 +29,7 @@ class Base(pl.LightningModule):
 
         self.args = args
         self.model = configure_model(args)
+        self.n_samples = 5
 
         ### pytorch-metric-learning stuff ###
         if args.distance == "cosine":
@@ -37,6 +40,7 @@ class Base(pl.LightningModule):
         self.criterion = configure_metric_loss(args.loss, args.distance, args.margin)
 
         self.place_rec = True if args.datasets in ("dag", "msls") else False
+        self.savepath = f"../lightning_logs/{args.dataset}/{args.model}/results/"
 
         if self.place_rec:
             self.miner = TripletMarginMiner(
@@ -65,10 +69,10 @@ class Base(pl.LightningModule):
 
         self.save_hyperparameters()
 
-    def forward(self, x):
+    def forward(self, x, n_samples=1):
 
-        output = self.model(x)
-
+        output = self.model(x, n_samples)
+        
         return output
 
     def training_step(self, batch, batch_idx):
@@ -127,14 +131,14 @@ class Base(pl.LightningModule):
     def compute_loss(self, output, y, indices_tuple):
         raise NotImplementedError
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx, dataloader_idx):
 
         if self.place_rec:
             x, index, utm = batch
         else:
             x, target = batch
 
-        output = self.forward(x)
+        output = self.forward(x, self.n_samples)
 
         o = {"z_mu": output["z_mu"].cpu()}
 
@@ -146,16 +150,17 @@ class Base(pl.LightningModule):
 
         if "z_sigma" in output:
             o["z_sigma"] = output["z_sigma"].cpu()
-        elif "z_samples" in output:
+        
+        if "z_samples" in output:
             o["z_samples"] = output["z_samples"].cpu()
-
+        
         return o
 
-    def test_step(self, batch, batch_idx):
-        return self.validation_step(batch, batch_idx)
+    def test_step(self, batch, batch_idx, dataloader_idx):
+        return self.validation_step(batch, batch_idx, dataloader_idx)
 
-    def compute_metrics(self, outputs):
-
+    def format_outputs(self, outputs):
+        
         z_mu = torch.cat([o["z_mu"] for o in outputs])
         if not self.place_rec:
             targets = torch.cat([o["label"] for o in outputs])
@@ -185,30 +190,71 @@ class Base(pl.LightningModule):
         if z_muDb is not None and len(z_muDb) == 0:
             return
 
-        ranks = compute_rank(z_muQ, z_muDb)
-        mAPs, recalls = evaluate(ranks, pidxs)
+        o = {"z_muQ" : z_muQ, "z_muDb" : z_muDb, "pidxs" : pidxs}
+        if not self.place_rec:
+            o["targets"] = targets
 
-        return mAPs, recalls
+        if "z_sigma" in outputs[0]:
+            z_sigma = torch.cat([o["z_sigma"] for o in outputs])
+            if z_muDb is None:
+                # merge dicts
+                o = {**o, **{"z_sigmaQ" : z_sigma, "z_sigmaDb" : None}}
+
+        if "z_samples" in outputs[0]:
+            z_samples = torch.cat([o["z_samples"] for o in outputs])
+            if z_muDb is None:
+                # merge dicts
+                o = {**o, **{"z_samplesQ" : z_samples, "z_samplesDb" : None}}
+
+        return o
+
+    def compute_metrics(self, outputs, prefix):
+
+        id = self.format_outputs(outputs[0])
+
+        if len(outputs) == 2:
+            ood = self.format_outputs(outputs[1])
+
+        ranks = compute_rank(id["z_muQ"], id["z_muDb"])
+        predictive_metrics = evaluate(ranks, id["pidxs"])
+
+        uncertainty_metrics = evaluate_uncertainties(id, ood, self.savepath, prefix)
+
+        metrics = {**predictive_metrics, **uncertainty_metrics}
+
+        return metrics
 
     def validation_epoch_end(self, outputs):
 
-        mAPs, recalls = self.compute_metrics(outputs)
+        os.makedirs(os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True)
+        metrics = self.compute_metrics(outputs, prefix=f"val/{self.global_step}/")
 
         for i, k in enumerate([5, 10, 20]):
-            self.log("val_map/map@{}".format(k), mAPs[i], prog_bar=True)
+            self.log("val_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
         for i, k in enumerate([1, 5, 10, 20]):
-            self.log("val_recall/recall@{}".format(k), recalls[i])
+            self.log("val_recall/recall@{}".format(k), metrics["recall"][i])
+
+        for key in metrics:
+            if key not in ("map", "recall"):
+                self.log(f"val_metric/{key}", metrics[key])
 
     def test_epoch_end(self, outputs):
 
-        mAPs, recalls = self.compute_metrics(outputs)
+        metrics = self.compute_metrics(outputs, prefix="test_")
 
         for i, k in enumerate([5, 10, 20]):
-            self.log("test_map/map@{}".format(k), mAPs[i], prog_bar=True)
+            self.log("test_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
         for i, k in enumerate([1, 5, 10, 20]):
-            self.log("test_recall/recall@{}".format(k), recalls[i])
+            self.log("test_recall/recall@{}".format(k), metrics["recall"][i])
+
+        for key in metrics:
+            if key not in ("map", "recall"):
+                self.log(f"test_metric/{key}", metrics[key])
+
+        with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
+            json.dump(metrics, file)
 
     def configure_optimizers(self):
 

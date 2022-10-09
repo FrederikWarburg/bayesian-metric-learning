@@ -11,13 +11,20 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from datasets.placerecognitiondata import PlaceRecognitionDataModule
 from datasets.imageretrievaldata import ImageRetrievalDataModule
 from lightning.deterministic_model import DeterministicModel
-#from lightning.laplace_online_mo
+
+# from lightning.laplace_online_mo
 from lightning.pfe_model import PfeModel
+
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="../configs/cub200/det_model.yaml", type=str, help="config file")
+    parser.add_argument(
+        "--config",
+        default="../configs/cub200/det_model.yaml",
+        type=str,
+        help="config file",
+    )
     parser.add_argument("--seed", default=42, type=int, help="seed")
     args = parser.parse_args()
 
@@ -29,7 +36,7 @@ def parse_args():
     return config, args
 
 
-def main(config, args, margin = None, lr = None):
+def main(config, args, margin=None, lr=None):
 
     if margin is not None:
         config["margin"] = margin
@@ -59,15 +66,13 @@ def main(config, args, margin = None, lr = None):
 
     # setup logger
     savepath = f"../lightning_logs/{config.dataset}/{config.model}"
-    logger = WandbLogger(
-        save_dir=f"../logs", name=f"{config.dataset}/{config.model}"
-    )
+    logger = WandbLogger(save_dir=f"../logs", name=f"{config.dataset}/{config.model}")
 
     # lightning trainer
     checkpoint_callback = ModelCheckpoint(
         monitor="val_map/map@5",
         dirpath=f"{savepath}/checkpoints",
-        filename="best.ckpt", #"{epoch:02d}-{val_map@5:.2f}",
+        filename="best",  # "{epoch:02d}-{val_map@5:.2f}",
         save_top_k=1,
         mode="max",
         save_last=True,
@@ -92,7 +97,6 @@ def main(config, args, margin = None, lr = None):
         callbacks=callbacks,
     )
 
-
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)
 
@@ -101,7 +105,6 @@ def main(config, args, margin = None, lr = None):
 
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)
-
 
 
 if __name__ == "__main__":
