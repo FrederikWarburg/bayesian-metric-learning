@@ -14,8 +14,7 @@ class PfeCriterion(nn.Module):
             a, p, _, _ = indices_tuple
 
         sigma2 = sigma**2
-        loss = torch.norm(mu[a] - mu[p]) / (sigma2[a] + sigma2[p]) + torch.log(
-            sigma2[a] + sigma2[p]
-        )
+        
+        loss = (mu[a] - mu[p])**2 / (sigma2[a] + sigma2[p]) + torch.log(sigma2[a] + sigma2[p])
 
         return loss.mean()

@@ -7,6 +7,7 @@ from evaluate.ece import evaluate_ece
 from evaluate.ausc import evaluate_ausc
 import os
 
+
 def evaluate(ranks, pidxs):
 
     if ranks is None:
@@ -15,7 +16,7 @@ def evaluate(ranks, pidxs):
     mAPs = [mapk(ranks, pidxs, k=k) for k in [5, 10, 20]]
     recalls = recall(ranks, pidxs, ks=[1, 5, 10, 20])
 
-    return {"map" : mAPs, "recall": recalls}
+    return {"map": mAPs, "recall": recalls}
 
 
 def evaluate_uncertainties(dict_in, dict_ood, vis_path, prefix):

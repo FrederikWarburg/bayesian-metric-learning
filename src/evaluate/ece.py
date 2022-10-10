@@ -7,7 +7,10 @@ from tqdm import tqdm
 from sklearn.neighbors import NearestNeighbors
 import os
 
+from utils.knn import FaissKNeighbors
+
 sns.set()
+
 
 def evaluate_ece(dict, vis_path, prefix):
 
@@ -31,9 +34,10 @@ def evaluate_ece(dict, vis_path, prefix):
     )
 
     # plot calibration curve
-    plot_calibration_curve(acc, conf, vis_path, prefix, bins= 10)
+    plot_calibration_curve(acc, conf, vis_path, prefix, bins=10)
 
     return ece
+
 
 def compute_knn(samples, targets):
 
@@ -43,9 +47,10 @@ def compute_knn(samples, targets):
     print(f"==> Computing ece predictions for {n_samples} samples")
     for i in tqdm(range(n_samples)):
 
-        sample_i = samples[:, i, :]
+        sample_i = np.ascontiguousarray(samples[:, i, :].numpy())
 
-        neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
+        # neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
+        neigh = FaissKNeighbors(k=2)
         neigh.fit(sample_i)
         dist, idx = neigh.kneighbors(sample_i)
 
@@ -60,6 +65,7 @@ def compute_knn(samples, targets):
     confidences = torch.mean((pred_labels == predicted).float(), dim=0)
 
     return targets, confidences, predicted
+
 
 def calibration_curves(targets, confidences, preds, bins=10, fill_nans=False):
     targets = targets.cpu().numpy()
@@ -112,7 +118,7 @@ def plot_calibration_curve(acc, confidences, path, prefix, bins=10):
     )
 
     # Add histogram of confidences scaled between 0 and 1
-    #confidences = confidences.cpu().numpy()
+    # confidences = confidences.cpu().numpy()
     ax.hist(
         confidences,
         bins=bins,

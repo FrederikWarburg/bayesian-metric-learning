@@ -16,7 +16,7 @@ def evaluate_ood(dict_in, dict_ood, vis_path, prefix):
     id_sigma = dict_in["z_sigmaQ"]
     ood_z_mu = dict_ood["z_muQ"]
     ood_sigma = dict_ood["z_sigmaQ"]
-        
+
     # plot histrograms
     plot_ood(
         id_z_mu,
@@ -110,7 +110,6 @@ def plot_prc(pred, target, vis_path, prefix):
     plt.plot(recall, precision)
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.legend()
     fig.savefig(os.path.join(vis_path, f"{prefix}ood_precision_recall_curve.png"))
     plt.close()
     plt.cla()
@@ -129,7 +128,6 @@ def plot_roc(pred, target, vis_path, prefix):
     plt.plot(fpr, tpr)
     plt.xlabel("FPR")
     plt.ylabel("TPR")
-    plt.legend()
     fig.savefig(os.path.join(vis_path, f"{prefix}ood_roc_curve.png"))
     plt.close()
     plt.cla()

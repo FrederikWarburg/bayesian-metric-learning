@@ -33,7 +33,7 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         if stage == "fit":
             self.train_dataset = TrainDataset(self.data_dir)
             self.val_dataset = TestDataset(self.data_dir)
-            
+
         elif stage == "test":
             self.test_dataset = TestDataset(self.data_dir)
 
@@ -51,45 +51,53 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        dataloaders = [DataLoader(
-            self.val_dataset,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.workers,
-            pin_memory=True,
-            drop_last=False,
-        )]
-
-        if hasattr(self, "ood_dataset"):
-            dataloaders += [DataLoader(
-                self.ood_dataset,
+        dataloaders = [
+            DataLoader(
+                self.val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.workers,
                 pin_memory=True,
                 drop_last=False,
-            )]
+            )
+        ]
 
-        return dataloaders
+        if hasattr(self, "ood_dataset"):
+            dataloaders += [
+                DataLoader(
+                    self.ood_dataset,
+                    batch_size=self.batch_size,
+                    shuffle=False,
+                    num_workers=self.workers,
+                    pin_memory=True,
+                    drop_last=False,
+                )
+            ]
+
+        return 2*dataloaders
 
     def test_dataloader(self):
-        dataloaders = [DataLoader(
-            self.test_dataset,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.workers,
-            pin_memory=True,
-            drop_last=False,
-        )]
-
-        if hasattr(self, "ood_dataset"):
-            dataloaders += [DataLoader(
-                self.ood_dataset,
+        dataloaders = [
+            DataLoader(
+                self.test_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.workers,
                 pin_memory=True,
                 drop_last=False,
-            )]
+            )
+        ]
 
-        return dataloaders
+        if hasattr(self, "ood_dataset"):
+            dataloaders += [
+                DataLoader(
+                    self.ood_dataset,
+                    batch_size=self.batch_size,
+                    shuffle=False,
+                    num_workers=self.workers,
+                    pin_memory=True,
+                    drop_last=False,
+                )
+            ]
+
+        return 2*dataloaders

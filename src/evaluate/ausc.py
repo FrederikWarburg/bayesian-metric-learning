@@ -1,8 +1,10 @@
 import torch
 from sklearn.neighbors import NearestNeighbors
+from utils.knn import FaissKNeighbors
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+
 
 def evaluate_ausc(dict, path, prefix):
 
@@ -19,11 +21,13 @@ def evaluate_ausc(dict, path, prefix):
 
     return ausc
 
-def plot_sparsification_curve(
-    targets, z_mu, z_sigma, path, prefix
-):
 
-    neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
+def plot_sparsification_curve(targets, z_mu, z_sigma, path, prefix):
+
+    # neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
+    z_mu = np.ascontiguousarray(z_mu.numpy())
+
+    neigh = FaissKNeighbors(k=2)
     neigh.fit(z_mu)
     dist, idx = neigh.kneighbors(z_mu)
 

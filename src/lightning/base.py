@@ -23,13 +23,15 @@ from miners.custom_miners import TripletMarginMiner
 import json
 import os
 
+
 class Base(pl.LightningModule):
     def __init__(self, args):
         super().__init__()
 
         self.args = args
         self.model = configure_model(args)
-        self.n_samples = 5
+        self.val_n_samples = 5
+        self.test_n_samples = 100
 
         ### pytorch-metric-learning stuff ###
         if args.distance == "cosine":
@@ -72,7 +74,7 @@ class Base(pl.LightningModule):
     def forward(self, x, n_samples=1):
 
         output = self.model(x, n_samples)
-        
+
         return output
 
     def training_step(self, batch, batch_idx):
@@ -131,14 +133,13 @@ class Base(pl.LightningModule):
     def compute_loss(self, output, y, indices_tuple):
         raise NotImplementedError
 
-    def validation_step(self, batch, batch_idx, dataloader_idx):
-
+    def forward_step(self, batch, batch_idx, dataloader_idx, n_samples=1):
         if self.place_rec:
             x, index, utm = batch
         else:
             x, target = batch
 
-        output = self.forward(x, self.n_samples)
+        output = self.forward(x, n_samples)
 
         o = {"z_mu": output["z_mu"].cpu()}
 
@@ -150,17 +151,24 @@ class Base(pl.LightningModule):
 
         if "z_sigma" in output:
             o["z_sigma"] = output["z_sigma"].cpu()
-        
+
         if "z_samples" in output:
             o["z_samples"] = output["z_samples"].cpu()
-        
+
         return o
 
+    def validation_step(self, batch, batch_idx, dataloader_idx):
+        return self.forward_step(
+            batch, batch_idx, dataloader_idx, n_samples=self.val_n_samples
+        )
+
     def test_step(self, batch, batch_idx, dataloader_idx):
-        return self.validation_step(batch, batch_idx, dataloader_idx)
+        return self.forward_step(
+            batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
+        )
 
     def format_outputs(self, outputs):
-        
+
         z_mu = torch.cat([o["z_mu"] for o in outputs])
         if not self.place_rec:
             targets = torch.cat([o["label"] for o in outputs])
@@ -190,7 +198,7 @@ class Base(pl.LightningModule):
         if z_muDb is not None and len(z_muDb) == 0:
             return
 
-        o = {"z_muQ" : z_muQ, "z_muDb" : z_muDb, "pidxs" : pidxs}
+        o = {"z_muQ": z_muQ, "z_muDb": z_muDb, "pidxs": pidxs}
         if not self.place_rec:
             o["targets"] = targets
 
@@ -198,13 +206,13 @@ class Base(pl.LightningModule):
             z_sigma = torch.cat([o["z_sigma"] for o in outputs])
             if z_muDb is None:
                 # merge dicts
-                o = {**o, **{"z_sigmaQ" : z_sigma, "z_sigmaDb" : None}}
+                o = {**o, **{"z_sigmaQ": z_sigma, "z_sigmaDb": None}}
 
         if "z_samples" in outputs[0]:
             z_samples = torch.cat([o["z_samples"] for o in outputs])
             if z_muDb is None:
                 # merge dicts
-                o = {**o, **{"z_samplesQ" : z_samples, "z_samplesDb" : None}}
+                o = {**o, **{"z_samplesQ": z_samples, "z_samplesDb": None}}
 
         return o
 
@@ -226,7 +234,9 @@ class Base(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
 
-        os.makedirs(os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True)
+        os.makedirs(
+            os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True
+        )
         metrics = self.compute_metrics(outputs, prefix=f"val/{self.global_step}/")
 
         for i, k in enumerate([5, 10, 20]):

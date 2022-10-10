@@ -41,7 +41,7 @@ class UncertaintyModule(nn.Module):
         return self.gamma * x + self.beta
 
     def forward(self, x, n_samples=1):
-        
+
         b, c, h, w = x.shape
 
         # Non-trainable
@@ -58,12 +58,14 @@ class UncertaintyModule(nn.Module):
         log_var = self.scale_and_shift(log_var)
 
         sigma = (log_var * 0.5).exp()
-        
+
         # sample from projected normal distribution
-        samples = mu.unsqueeze(1).repeat(1,n_samples,1) + torch.randn(b, n_samples, sigma.shape[-1], device=sigma.device) * sigma.unsqueeze(1).repeat(1,n_samples,1)
+        samples = mu.unsqueeze(1).repeat(1, n_samples, 1) + torch.randn(
+            b, n_samples, sigma.shape[-1], device=sigma.device
+        ) * sigma.unsqueeze(1).repeat(1, n_samples, 1)
         samples = samples / torch.norm(samples, dim=2, keepdim=True)
 
-        return {"z_mu": mu, "z_sigma": sigma, "z_samples" : samples}
+        return {"z_mu": mu, "z_sigma": sigma, "z_samples": samples}
 
 
 def rename_keys(statedict):

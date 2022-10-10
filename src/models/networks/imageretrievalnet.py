@@ -94,23 +94,32 @@ OUTPUT_DIM = {
 class ImageRetrievalNet(nn.Module):
     def __init__(self, features, pool, whiten, meta):
         super(ImageRetrievalNet, self).__init__()
-        self.features = nn.Sequential(*features)
-        self.pool = pool
-        self.whiten = whiten
-        self.norm = L2N()
+        #self.features = nn.Sequential(*features)
+        #self.pool = pool
+        #breakpoint()
+        self.backbone = nn.Sequential(* ( features + [pool, L2N(), nn.Flatten()]) )
+
+        self.linear = nn.Sequential(whiten, L2N())
+
+        #self.whiten = whiten
+        #self.norm = L2N()
         self.meta = meta
 
-    def forward(self, x):
+    def forward(self, x, n_samples=1):
 
         # x -> features
-        o = self.features(x)
+        #o = self.features(x)
 
         # features -> pool -> norm
-        o = self.norm(self.pool(o)).squeeze(-1).squeeze(-1)
+        #o = self.norm(self.pool(o)).squeeze(-1).squeeze(-1)
+
+        o = self.backbone(x)
 
         # if whiten exist: pooled features -> whiten -> norm
-        if self.whiten is not None:
-            o = self.norm(self.whiten(o))
+        #if self.whiten is not None:
+        #    o = self.norm(self.whiten(o))
+
+        o = self.linear(o)
 
         return {"z_mu": o}
 
@@ -138,26 +147,12 @@ def init_network(params):
     # parse params with default values
     architecture = params.get("architecture", "resnet101")
     pooling = params.get("pooling", "gem")
-    regional = params.get("regional", False)
-    whitening = params.get("whitening", False)
-    mean = params.get("mean", [0.485, 0.456, 0.406])
-    std = params.get("std", [0.229, 0.224, 0.225])
-    pretrained = params.get("pretrained", True)
 
     # get output dimensionality size
     dim = OUTPUT_DIM[architecture]
 
-    # loading network from torchvision
-    if pretrained:
-        if architecture not in FEATURES:
-            # initialize with network pretrained on imagenet in pytorch
-            net_in = getattr(torchvision.models, architecture)(pretrained=True)
-        else:
-            # initialize with random weights, later on we will fill features with custom pretrained network
-            net_in = getattr(torchvision.models, architecture)(pretrained=False)
-    else:
-        # initialize with random weights
-        net_in = getattr(torchvision.models, architecture)(pretrained=False)
+    # initialize with random weights
+    net_in = getattr(torchvision.models, architecture)(pretrained=True)
 
     # initialize features
     # take only convolutions for features,
@@ -181,62 +176,19 @@ def init_network(params):
     pool = POOLING[pooling]()
 
     # initialize whitening
-    if whitening:
-        whiten = nn.Linear(dim, dim, bias=True)
+    
+    whiten = nn.Linear(dim, dim, bias=True)
         # TODO: whiten with possible dimensionality reduce
 
-        if pretrained:
-            w = architecture
-            if whitening:
-                w += "-w"
-            w += "-" + pooling
-            if regional:
-                w += "-r"
-            if w in WHITENING:
-                print(
-                    ">> {}: for '{}' custom computed whitening '{}' is used".format(
-                        os.path.basename(__file__), w, os.path.basename(WHITENING[w])
-                    )
-                )
-                whiten_dir = os.path.join(get_data_root(), "whiten")
-                whiten.load_state_dict(
-                    model_zoo.load_url(WHITENING[w], model_dir=whiten_dir)
-                )
-            else:
-                print(
-                    ">> {}: for '{}' there is no whitening computed, random weights are used".format(
-                        os.path.basename(__file__), w
-                    )
-                )
-    else:
-        whiten = None
 
     # create meta information to be stored in the network
     meta = {
         "architecture": architecture,
         "pooling": pooling,
-        "regional": regional,
-        "whitening": whitening,
-        "mean": mean,
-        "std": std,
         "outputdim": dim,
     }
 
     # create a generic image retrieval network
     net = ImageRetrievalNet(features, pool, whiten, meta)
-
-    # initialize features with custom pretrained network if needed
-    if pretrained and architecture in FEATURES:
-        print(
-            ">> {}: for '{}' custom pretrained features '{}' are used".format(
-                os.path.basename(__file__),
-                architecture,
-                os.path.basename(FEATURES[architecture]),
-            )
-        )
-        model_dir = os.path.join(get_data_root(), "networks")
-        net.features.load_state_dict(
-            model_zoo.load_url(FEATURES[architecture], model_dir=model_dir)
-        )
 
     return net
