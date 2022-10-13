@@ -15,6 +15,7 @@ from datasets.imageretrievaldata import ImageRetrievalDataModule
 # models
 from lightning.deterministic_model import DeterministicModel
 from lightning.laplace_posthoc_model import LaplacePosthocModel
+from lightning.laplace_online_model import LaplaceOnlineModel
 from lightning.pfe_model import PfeModel
 
 
@@ -54,6 +55,8 @@ def main(config, args, margin=None, lr=None):
         data_module = PlaceRecognitionDataModule(**config.toDict())
     elif config.dataset in ("mnist", "fashionmnist", "cub200"):
         data_module = ImageRetrievalDataModule(**config.toDict())
+    data_module.setup()
+    config["dataset_size"] = data_module.train_dataset.__len__()
 
     if config.model == "deterministic":
         model = DeterministicModel(config)
@@ -103,12 +106,11 @@ def main(config, args, margin=None, lr=None):
 
     if config.model in ("laplace_posthoc"):
         loguru_logger.info(f"Start training!")   
-        data_module.setup()
         model.fit(datamodule=data_module)
 
     else:
         loguru_logger.info(f"Start testing!")   
-        trainer.test(model, datamodule=data_module)
+        #trainer.test(model, datamodule=data_module)
 
         loguru_logger.info(f"Start training!")
         trainer.fit(model, datamodule=data_module)

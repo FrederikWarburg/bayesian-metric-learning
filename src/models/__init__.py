@@ -1,4 +1,3 @@
-from models.networks.cub200 import Cub200Net
 from models.networks.imageretrievalnet import init_network
 from models.networks.mnistmodel import MnistLinearNet
 
@@ -10,8 +9,6 @@ def configure_model(args):
     ######
     if args.dataset in ("mnist", "fashionmnist"):
         model = MnistLinearNet(args.latent_dim)
-    elif args.arch in ("cub200net"):
-        model = Cub200Net(args.latent_dim)
     else:
         if args.pretrained:
             print(">> Using pre-trained model '{}'".format(args.arch))

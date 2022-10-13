@@ -1,4 +1,3 @@
-from turtle import forward
 from lightning.base import Base
 import torch
 import torch.nn as nn
@@ -120,14 +119,14 @@ class LaplacePosthocModel(Base):
 
                 z_mu = self.model.linear(x)
 
-                tuple_indices = self.get_indices_tuple(z_mu, y)
+                indices_tuple = self.get_indices_tuple(z_mu, y)
 
                 # randomly choose 5000 pairs if more than 5000 pairs available.
-                if len(tuple_indices[0]) > 5000:
-                    idx = torch.randperm(tuple_indices[0].size(0))[:5000]
-                    tuple_indices = (tuple_indices[0][idx], tuple_indices[1][idx], tuple_indices[2][idx])
+                if len(indices_tuple[0]) > 5000:
+                    idx = torch.randperm(indices_tuple[0].size(0))[:5000]
+                    indices_tuple = (indices_tuple[0][idx], indices_tuple[1][idx], indices_tuple[2][idx])
 
-                h = self.hessian_calculator.compute_hessian(x, self.model.linear, tuple_indices)
+                h = self.hessian_calculator.compute_hessian(x, self.model.linear, indices_tuple)
 
                 if hessian is None:
                     hessian = h

@@ -30,6 +30,7 @@ class Base(pl.LightningModule):
 
         self.args = args
         self.model = configure_model(args)
+        self.train_n_samples = 1
         self.val_n_samples = 5
         self.test_n_samples = 100
 
