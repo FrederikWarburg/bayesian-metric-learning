@@ -94,6 +94,12 @@ class PfeModel(Base):
         # overwrite criterion with pfe loss
         self.criterion = PfeCriterion()
 
+    def forward(self, x, n_samples=1):
+
+        output = self.model(x, n_samples)
+
+        return output
+
     def compute_loss(self, output, y, indices_tuple):
 
         loss = self.criterion(output["z_mu"], output["z_sigma"], indices_tuple)

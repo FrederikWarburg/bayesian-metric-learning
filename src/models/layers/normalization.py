@@ -8,9 +8,9 @@ import models.layers.functional as LF
 # --------------------------------------
 
 
-class L2N(nn.Module):
+class L2Norm(nn.Module):
     def __init__(self, eps=1e-6):
-        super(L2N, self).__init__()
+        super(L2Norm, self).__init__()
         self.eps = eps
 
     def forward(self, x):

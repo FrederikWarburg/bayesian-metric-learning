@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn.parameter import Parameter
 
 import models.layers.functional as LF
-from models.layers.normalization import L2N
+from models.layers.normalization import L2Norm
 
 # --------------------------------------
 # Pooling layers
@@ -96,7 +96,7 @@ class Rpool(nn.Module):
         self.rpool = rpool
         self.L = L
         self.whiten = whiten
-        self.norm = L2N()
+        self.norm = L2Norm()
         self.eps = eps
 
     def forward(self, x, aggregate=True):

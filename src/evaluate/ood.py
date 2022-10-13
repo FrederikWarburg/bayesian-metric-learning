@@ -9,6 +9,9 @@ import torch
 
 def evaluate_ood(dict_in, dict_ood, vis_path, prefix):
 
+    if dict_ood is None:
+        return None, None
+
     if dict_in["z_muDb"] is not None:
         raise NotADirectoryError
 

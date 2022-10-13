@@ -8,11 +8,13 @@ from dotmap import DotMap
 import yaml
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
+# data modules
 from datasets.placerecognitiondata import PlaceRecognitionDataModule
 from datasets.imageretrievaldata import ImageRetrievalDataModule
-from lightning.deterministic_model import DeterministicModel
 
-# from lightning.laplace_online_mo
+# models
+from lightning.deterministic_model import DeterministicModel
+from lightning.laplace_posthoc_model import LaplacePosthocModel
 from lightning.pfe_model import PfeModel
 
 
@@ -97,11 +99,19 @@ def main(config, args, margin=None, lr=None):
         callbacks=callbacks,
     )
 
-    loguru_logger.info(f"Start testing!")
-    trainer.test(model, datamodule=data_module)
+    #TODO: implement loading model to avoid retraining.
 
-    loguru_logger.info(f"Start training!")
-    trainer.fit(model, datamodule=data_module)
+    if config.model in ("laplace_posthoc"):
+        loguru_logger.info(f"Start training!")   
+        data_module.setup()
+        model.fit(datamodule=data_module)
+
+    else:
+        loguru_logger.info(f"Start testing!")   
+        trainer.test(model, datamodule=data_module)
+
+        loguru_logger.info(f"Start training!")
+        trainer.fit(model, datamodule=data_module)
 
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)

@@ -2,8 +2,8 @@
 
 
 # model specific
-model : "posthoc"
-resume : ""
+model : "laplace_posthoc"
+resume : "../lightning_logs/mnist/deterministic/checkpoints/best.ckpt"
 arch : "linear"
 latent_dim : 3
 

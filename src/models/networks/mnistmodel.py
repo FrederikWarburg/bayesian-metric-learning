@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.layers.normalization import L2N
+from models.layers.normalization import L2Norm
 import torch.nn.functional as F
 
 """
@@ -22,7 +22,7 @@ class MnistLinearNet(nn.Module):
             nn.Linear(128, 64),
             nn.Tanh(),
             nn.Linear(64, latent_dim),
-            L2N(),
+            L2Norm(),
         )
 
     def forward(self, x):
@@ -48,7 +48,7 @@ class MnistLinearNet(nn.Module):
             nn.Flatten(),
         )
 
-        self.linear = nn.Sequential(nn.Linear(9216, latent_dim), L2N())
+        self.linear = nn.Sequential(nn.Linear(9216, latent_dim), L2Norm())
 
     def forward(self, x):
 

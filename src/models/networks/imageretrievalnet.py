@@ -6,7 +6,7 @@ import torch.utils.model_zoo as model_zoo
 import torchvision
 
 from models.layers.pooling import MAC, SPoC, GeM, GeMmp, RMAC, Rpool
-from models.layers.normalization import L2N, PowerLaw
+from models.layers.normalization import L2Norm, PowerLaw
 
 
 def get_root():
@@ -97,12 +97,12 @@ class ImageRetrievalNet(nn.Module):
         #self.features = nn.Sequential(*features)
         #self.pool = pool
         #breakpoint()
-        self.backbone = nn.Sequential(* ( features + [pool, L2N(), nn.Flatten()]) )
+        self.backbone = nn.Sequential(* ( features + [pool, L2Norm(), nn.Flatten()]) )
 
-        self.linear = nn.Sequential(whiten, L2N())
+        self.linear = nn.Sequential(whiten, L2Norm())
 
         #self.whiten = whiten
-        #self.norm = L2N()
+        #self.norm = L2Norm()
         self.meta = meta
 
     def forward(self, x, n_samples=1):

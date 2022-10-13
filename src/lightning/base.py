@@ -71,12 +71,6 @@ class Base(pl.LightningModule):
 
         self.save_hyperparameters()
 
-    def forward(self, x, n_samples=1):
-
-        output = self.model(x, n_samples)
-
-        return output
-
     def training_step(self, batch, batch_idx):
 
         x, y = self.format_batch(batch)
@@ -157,12 +151,12 @@ class Base(pl.LightningModule):
 
         return o
 
-    def validation_step(self, batch, batch_idx, dataloader_idx):
+    def validation_step(self, batch, batch_idx, dataloader_idx=1):
         return self.forward_step(
             batch, batch_idx, dataloader_idx, n_samples=self.val_n_samples
         )
 
-    def test_step(self, batch, batch_idx, dataloader_idx):
+    def test_step(self, batch, batch_idx, dataloader_idx=1):
         return self.forward_step(
             batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
         )
@@ -218,17 +212,19 @@ class Base(pl.LightningModule):
 
     def compute_metrics(self, outputs, prefix):
 
-        id = self.format_outputs(outputs[0])
-
-        if len(outputs) == 2:
+        if len(outputs) == 2 and "z_mu" not in outputs[0]:
+            id = self.format_outputs(outputs[0])
             ood = self.format_outputs(outputs[1])
+        else:
+            id = self.format_outputs(outputs)
+            ood = None
 
         ranks = compute_rank(id["z_muQ"], id["z_muDb"])
-        predictive_metrics = evaluate(ranks, id["pidxs"])
+        metrics = evaluate(ranks, id["pidxs"])
 
-        uncertainty_metrics = evaluate_uncertainties(id, ood, self.savepath, prefix)
-
-        metrics = {**predictive_metrics, **uncertainty_metrics}
+        if "z_sigmaQ" in id:
+            uncertainty_metrics = evaluate_uncertainties(id, ood, self.savepath, prefix)
+            metrics = {**metrics, **uncertainty_metrics}
 
         return metrics
 
@@ -252,7 +248,7 @@ class Base(pl.LightningModule):
     def test_epoch_end(self, outputs):
 
         metrics = self.compute_metrics(outputs, prefix="test_")
-
+        
         for i, k in enumerate([5, 10, 20]):
             self.log("test_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 

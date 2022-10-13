@@ -1,6 +1,7 @@
 from random import shuffle
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 from torchvision import transforms
 
 
@@ -74,7 +75,7 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
                 )
             ]
 
-        return 2*dataloaders
+        return dataloaders
 
     def test_dataloader(self):
         dataloaders = [
@@ -100,4 +101,4 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
                 )
             ]
 
-        return 2*dataloaders
+        return dataloaders
