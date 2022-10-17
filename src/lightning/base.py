@@ -19,7 +19,8 @@ from evaluate.evaluate import evaluate, evaluate_uncertainties
 from evaluate.ranking import compute_rank
 from pytorch_metric_learning import miners
 import torch
-from miners.custom_miners import TripletMarginMiner
+from miners.custom_miners import TripletMarginMinerPR
+from miners.triplet_miners import TripletMarginMiner
 import json
 import os
 
@@ -46,7 +47,7 @@ class Base(pl.LightningModule):
         self.savepath = f"../lightning_logs/{args.dataset}/{args.model}/results/"
 
         if self.place_rec:
-            self.miner = TripletMarginMiner(
+            self.miner = TripletMarginMinerPR(
                 margin=args.margin,
                 collect_stats=True,
                 type_of_triplets=args.miner,
@@ -56,11 +57,11 @@ class Base(pl.LightningModule):
             )
             self.posDistThr = args.posDistThr
         else:
-            self.miner = miners.TripletMarginMiner(
+            self.miner = TripletMarginMiner(
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets="all",
+                type_of_triplets="all", # [easy, hard, semihard, all]
             )
 
         self.counter = 0

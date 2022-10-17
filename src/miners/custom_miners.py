@@ -74,7 +74,7 @@ class BaseTupleMiner(BaseMiner):
             raise BaseException
 
 
-class TripletMarginMiner(BaseTupleMiner):
+class TripletMarginMinerPR(BaseTupleMiner):
     """
     Returns triplets that violate the margin
     Args:
