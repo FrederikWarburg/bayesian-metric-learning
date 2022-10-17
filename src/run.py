@@ -40,6 +40,11 @@ def parse_args():
     return config, args
 
 
+models = {"deterministic" : DeterministicModel,
+          "pfe" : PfeModel,
+          "laplace_online" : LaplaceOnlineModel,
+          "laplace_posthoc" : LaplacePosthocModel}
+
 def main(config, args, margin=None, lr=None):
 
     if margin is not None:
@@ -59,21 +64,16 @@ def main(config, args, margin=None, lr=None):
     data_module.setup()
     config["dataset_size"] = data_module.train_dataset.__len__()
 
-    if config.model == "deterministic":
-        model = DeterministicModel(config)
-    elif config.model == "pfe":
-        model = PfeModel(config)
-    elif config.model == "laplace_posthoc":
-        model = LaplacePosthocModel(config)
-    elif config.model == "laplace_online":
-        model = LaplaceOnlineModel(config)
-    else:
-        raise NotImplementedError
+    name = f"{config.dataset}/{config.model}"
+    if "laplace" in config.model:
+        name += f"/{config.loss_approx}"
+    savepath = f"../lightning_logs/{name}"
+
+    model = models[config.model](config, savepath=savepath)
 
     # setup logger
-    savepath = f"../lightning_logs/{config.dataset}/{config.model}"
     os.makedirs("../logs", exist_ok=True)
-    logger = WandbLogger(save_dir=f"../logs", name=f"{config.dataset}/{config.model}")
+    logger = WandbLogger(save_dir=f"../logs", name=name)
 
     # lightning trainer
     checkpoint_callback = ModelCheckpoint(

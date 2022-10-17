@@ -23,10 +23,11 @@ from miners.custom_miners import TripletMarginMinerPR
 from miners.triplet_miners import TripletMarginMiner
 import json
 import os
+import csv
 
 
 class Base(pl.LightningModule):
-    def __init__(self, args):
+    def __init__(self, args, savepath):
         super().__init__()
 
         self.args = args
@@ -44,7 +45,7 @@ class Base(pl.LightningModule):
         self.criterion = configure_metric_loss(args.loss, args.distance, args.margin)
 
         self.place_rec = True if args.datasets in ("dag", "msls") else False
-        self.savepath = f"../lightning_logs/{args.dataset}/{args.model}/results/"
+        self.savepath = os.path.join(savepath, "results")
 
         if self.place_rec:
             self.miner = TripletMarginMinerPR(
@@ -261,8 +262,21 @@ class Base(pl.LightningModule):
             if key not in ("map", "recall"):
                 self.log(f"test_metric/{key}", metrics[key])
 
+        # dump to json
         with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
             json.dump(metrics, file)
+            
+        # dump to csv to easy cp to google drive
+        with open(os.path.join(self.savepath, "metrics.csv"), 'w') as f:
+            for key in ["recall", "map", "auroc", "auprc", "ausc", "ece"]:
+                if key == "recall":
+                    for i, k in enumerate([1, 5, 10, 20]):
+                        f.write("%s\n" % (metrics[key][i]))
+                elif key == "map":
+                    for i, k in enumerate([5, 10, 20]):
+                        f.write("%s\n" % (metrics[key][i]))
+                else:
+                    f.write("%s\n" % (metrics[key]))
 
     def configure_optimizers(self):
 

@@ -21,8 +21,8 @@ def rename_keys(statedict):
 
 
 class LaplacePosthocModel(Base):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, savepath):
+        super().__init__(args, savepath)
 
         # load model checkpoint
         if not os.path.isfile(args.resume):
@@ -38,7 +38,7 @@ class LaplacePosthocModel(Base):
         self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
 
         self.hessian_calculator = HessianCalculator(wrt="weight",
-                                                    loss_func="contrastive",
+                                                    loss_func=f"contrastive_{args.loss_approx}",
                                                     shape="diagonal",
                                                     speed="half")
 

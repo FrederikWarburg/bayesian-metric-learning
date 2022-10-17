@@ -2,11 +2,13 @@
 
 
 # model specific
-model : "pfe"
-resume : ""
+model : "laplace_posthoc"
+resume : "../lightning_logs/fashionmnist/deterministic/checkpoints/best.ckpt"
 arch : "linear"
 latent_dim : 3
-resume : "../lightning_logs/fashionmnist/deterministic/checkpoints/best.ckpt"
+
+# hessian
+loss_approx : "pos"
 
 # logging
 check_val_every_n_epoch: 1
@@ -22,5 +24,5 @@ distance : "euclidean"
 # data specific
 data_dir : "/work3/frwa/data/"
 dataset : "fashionmnist"
-batch_size : 256
+batch_size : 64
 split_query_database : False

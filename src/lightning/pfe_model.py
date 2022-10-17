@@ -75,8 +75,8 @@ def rename_keys(statedict):
 
 
 class PfeModel(Base):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, savepath):
+        super().__init__(args, savepath)
 
         # load model checkpoint
         if not os.path.isfile(args.resume):

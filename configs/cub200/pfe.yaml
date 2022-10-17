@@ -2,22 +2,21 @@
 
 
 # model specific
-model : "deterministic"
+model : "pfe"
 resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-pretrained : True
+resume : "../lightning_logs/cub200/deterministic/checkpoints/best.ckpt"
 latent_dim : 512
 
 # logging
-log_dir : "../results"
-check_val_every_n_epoch : 1
+check_val_every_n_epoch: 1
 
 # training
 train : True
 epochs : 10
-lr : 3.0e-7
+lr : 0.001
 loss : "contrastive"
 margin : 1
 distance : "euclidean"

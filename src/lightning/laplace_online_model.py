@@ -14,8 +14,8 @@ from tqdm import tqdm
 
 
 class LaplaceOnlineModel(Base):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, savepath):
+        super().__init__(args, savepath)
 
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
