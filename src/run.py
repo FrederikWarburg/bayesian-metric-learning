@@ -6,6 +6,7 @@ import torch
 from datetime import datetime
 from dotmap import DotMap
 import yaml
+import os
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 # data modules
@@ -71,6 +72,7 @@ def main(config, args, margin=None, lr=None):
 
     # setup logger
     savepath = f"../lightning_logs/{config.dataset}/{config.model}"
+    os.makedirs("../logs", exist_ok=True)
     logger = WandbLogger(save_dir=f"../logs", name=f"{config.dataset}/{config.model}")
 
     # lightning trainer
@@ -91,12 +93,11 @@ def main(config, args, margin=None, lr=None):
     # freeze model paramters
     trainer = pl.Trainer.from_argparse_args(
         config,
-        accelerator="ddp",
+        accelerator="gpu",
         precision=32,
         max_epochs=config.epochs,
-        gpus=torch.cuda.device_count(),
+        devices=torch.cuda.device_count(),
         check_val_every_n_epoch=config.check_val_every_n_epoch,
-        progress_bar_refresh_rate=20,
         logger=logger,
         # plugins=DDPPlugin(find_unused_parameters=False),
         callbacks=callbacks,

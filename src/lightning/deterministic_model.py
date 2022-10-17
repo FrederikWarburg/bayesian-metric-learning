@@ -8,7 +8,7 @@ class DeterministicModel(Base):
 
     def forward(self, x, n_samples=1):
 
-        output = self.model(x, n_samples)
+        output = self.model(x)
 
         return output
 
