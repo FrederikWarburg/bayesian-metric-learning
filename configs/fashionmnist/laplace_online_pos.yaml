@@ -3,7 +3,6 @@
 
 # model specific
 model : "laplace_online"
-resume : "../lightning_logs/fashionmnist/deterministic/checkpoints/best.ckpt"
 arch : "linear"
 latent_dim : 3
 
