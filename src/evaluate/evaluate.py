@@ -1,4 +1,3 @@
-from evaluate.visualize_samples import ood_visualisations
 import numpy as np
 from evaluate.map import mapk
 from evaluate.recall import recall

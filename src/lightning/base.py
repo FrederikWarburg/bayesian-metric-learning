@@ -51,7 +51,7 @@ class Base(pl.LightningModule):
             self.miner = TripletMarginMinerPR(
                 margin=args.margin,
                 collect_stats=True,
-                type_of_triplets=args.miner,
+                type_of_triplets=args.type_of_triplets,
                 posDistThr=self.args.posDistThr,
                 negDistThr=self.args.negDistThr,
                 distance=self.distance,
@@ -62,7 +62,7 @@ class Base(pl.LightningModule):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets="all", # [easy, hard, semihard, all]
+                type_of_triplets=args.type_of_triplets, # [easy, hard, semihard, all]
             )
 
         self.counter = 0
@@ -269,6 +269,9 @@ class Base(pl.LightningModule):
         # dump to csv to easy cp to google drive
         with open(os.path.join(self.savepath, "metrics.csv"), 'w') as f:
             for key in ["recall", "map", "auroc", "auprc", "ausc", "ece"]:
+                if key not in metrics:
+                    metrics[key] = "nan"
+                
                 if key == "recall":
                     for i, k in enumerate([1, 5, 10, 20]):
                         f.write("%s\n" % (metrics[key][i]))

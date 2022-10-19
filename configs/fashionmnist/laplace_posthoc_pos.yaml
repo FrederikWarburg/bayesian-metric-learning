@@ -9,6 +9,8 @@ latent_dim : 3
 
 # hessian
 loss_approx : "pos"
+max_pairs : 5000
+type_of_triples : "all" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1

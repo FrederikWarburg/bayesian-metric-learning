@@ -30,6 +30,7 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
             from datasets.mnist import TestDataset as OODDataset
         elif self.dataset == "cub200":
             from datasets.cub200 import TrainDataset, TestDataset
+            from datasets.cars196 import TestDataset as OODDataset
 
         if stage == "fit":
             self.train_dataset = TrainDataset(self.data_dir)
@@ -38,7 +39,7 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         elif stage == "test":
             self.test_dataset = TestDataset(self.data_dir)
 
-        if self.dataset in ("fashionmnist"):
+        if self.dataset in ("fashionmnist", "cub200"):
             self.ood_dataset = OODDataset(self.data_dir)
 
     def train_dataloader(self):

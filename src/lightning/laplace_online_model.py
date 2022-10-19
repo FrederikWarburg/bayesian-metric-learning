@@ -16,19 +16,22 @@ from tqdm import tqdm
 class LaplaceOnlineModel(Base):
     def __init__(self, args, savepath):
         super().__init__(args, savepath)
+        
+        self.max_pairs = args.max_pairs
 
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
 
         self.hessian_calculator = HessianCalculator(wrt="weight",
-                                                    loss_func="contrastive",
+                                                    loss_func=f"contrastive_{args.loss_approx}",
                                                     shape="diagonal",
                                                     speed="half")
 
         self.laplace = DiagLaplace()
 
         self.dataset_size = args.dataset_size
-        self.hessian = self.laplace.init_hessian(self.dataset_size, self.model.linear, "cuda:0")
+        hessian = self.laplace.init_hessian(self.dataset_size, self.model.linear, "cuda:0")
+        self.register_buffer("hessian", hessian)
          
         self.hessian_memory_factor = args.hessian_memory_factor
 
@@ -65,8 +68,8 @@ class LaplaceOnlineModel(Base):
                 # randomly choose 5000 pairs if more than 5000 pairs available.
                 #TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
-                if len(indices_tuple[0]) > 5000:
-                    idx = torch.randperm(indices_tuple[0].size(0))[:5000]
+                if len(indices_tuple[0]) > self.max_pairs:
+                    idx = torch.randperm(indices_tuple[0].size(0))[:self.max_pairs]
                     indices_tuple = (indices_tuple[0][idx], indices_tuple[1][idx], indices_tuple[2][idx])
 
                 h_s = self.hessian_calculator.compute_hessian(x.detach(), self.model.linear, indices_tuple)

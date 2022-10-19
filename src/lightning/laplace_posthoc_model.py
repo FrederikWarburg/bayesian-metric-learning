@@ -24,6 +24,8 @@ class LaplacePosthocModel(Base):
     def __init__(self, args, savepath):
         super().__init__(args, savepath)
 
+        self.max_pairs = args.max_pairs
+
         # load model checkpoint
         if not os.path.isfile(args.resume):
             print(f"path {args.resume} not found.")
@@ -106,8 +108,8 @@ class LaplacePosthocModel(Base):
                 indices_tuple = self.get_indices_tuple(z_mu, y)
 
                 # randomly choose 5000 pairs if more than 5000 pairs available.
-                if len(indices_tuple[0]) > 5000:
-                    idx = torch.randperm(indices_tuple[0].size(0))[:5000]
+                if len(indices_tuple[0]) > self.max_pairs:
+                    idx = torch.randperm(indices_tuple[0].size(0))[:self.max_pairs]
                     indices_tuple = (indices_tuple[0][idx], indices_tuple[1][idx], indices_tuple[2][idx])
 
                 h = self.hessian_calculator.compute_hessian(x, self.model.linear, indices_tuple)
@@ -117,9 +119,8 @@ class LaplacePosthocModel(Base):
                 else:
                     hessian += h
 
-        self.hessian = hessian
-
-        savepath = f"../lightning_logs/{self.args.dataset}/{self.args.model}/checkpoints"
+        self.register_buffer("hessian", hessian)
+        
+        savepath = f"{self.savepath.replace('/results', '')}/checkpoints"
         os.makedirs(savepath, exist_ok=True)
-        torch.save(hessian, savepath + "/hessian.pth")
-        torch.save(self.model.state_dict(), savepath + "/best.ckpt")
+        torch.save(self.state_dict(), savepath + "/best.ckpt")

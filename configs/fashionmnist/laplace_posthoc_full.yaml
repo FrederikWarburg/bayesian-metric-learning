@@ -8,7 +8,9 @@ arch : "linear"
 latent_dim : 3
 
 # hessian
-loss_approx : "fix"
+loss_approx : "full"
+max_pairs : 5000
+type_of_triples : "all" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1

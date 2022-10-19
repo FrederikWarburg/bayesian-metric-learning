@@ -9,9 +9,9 @@
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
-#BSUB -W 10:00
+#BSUB -W 20:00
 # request 5GB of system-memory
-#BSUB -R "rusage[mem=10GB]"
+#BSUB -R "rusage[mem=15GB]"
 ### -- set the email address --
 # please uncomment the following line and put in your e-mail address,
 # if you want to receive e-mail notifications on a non-default address
@@ -32,7 +32,7 @@ module load cuda/11.3
 module load gcc/9.2.0 
 source activate metric_learning
 
-python run.py --config ../configs/cub200/deterministic.yaml
+#### python run.py --config ../configs/cub200/deterministic.yaml
 python run.py --config ../configs/cub200/pfe.yaml
 python run.py --config ../configs/cub200/laplace_posthoc_fix.yaml
 python run.py --config ../configs/cub200/laplace_posthoc_full.yaml
