@@ -1,0 +1,29 @@
+
+
+
+# model specific
+model : "pfe"
+resume : ""
+arch : "resnet50"
+pool : "gem"
+whitening : True
+resume : "../lightning_logs/msls/deterministic/checkpoints/best.ckpt"
+latent_dim : 512
+
+# logging
+check_val_every_n_epoch: 1
+
+# training
+train : True
+epochs : 10
+lr : 0.001
+loss : "contrastive"
+margin : 1
+distance : "euclidean"
+type_of_triples : "hard" # easy, semihard, hard, all
+
+# data specific
+data_dir : "/work3/frwa/data/"
+dataset : "msls"
+batch_size : 64
+split_query_database : False

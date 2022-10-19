@@ -1,3 +1,4 @@
+from ast import Break
 from dataclasses import field
 import pytorch_lightning as pl
 from models import configure_model, get_model_parameters
@@ -44,7 +45,7 @@ class Base(pl.LightningModule):
 
         self.criterion = configure_metric_loss(args.loss, args.distance, args.margin)
 
-        self.place_rec = True if args.datasets in ("dag", "msls") else False
+        self.place_rec = args.dataset in ("dag", "msls")
         self.savepath = os.path.join(savepath, "results")
 
         if self.place_rec:
@@ -75,7 +76,7 @@ class Base(pl.LightningModule):
         self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
-
+        
         x, y = self.format_batch(batch)
 
         output = self.forward(x)
@@ -131,6 +132,7 @@ class Base(pl.LightningModule):
         raise NotImplementedError
 
     def forward_step(self, batch, batch_idx, dataloader_idx, n_samples=1):
+        
         if self.place_rec:
             x, index, utm = batch
         else:
@@ -173,7 +175,7 @@ class Base(pl.LightningModule):
             z_muQ = z_mu
             z_muDb = None
         else:
-
+            
             index = torch.cat([o["index"] for o in outputs], dim=1)
             utm = torch.cat([o["utm"] for o in outputs])
 
@@ -221,7 +223,10 @@ class Base(pl.LightningModule):
         else:
             id = self.format_outputs(outputs)
             ood = None
-
+        
+        if id is None:
+            return None
+        
         ranks = compute_rank(id["z_muQ"], id["z_muDb"])
         metrics = evaluate(ranks, id["pidxs"])
 
@@ -238,6 +243,9 @@ class Base(pl.LightningModule):
         )
         metrics = self.compute_metrics(outputs, prefix=f"val/{self.global_step}/")
 
+        if metrics is None:
+            return
+
         for i, k in enumerate([5, 10, 20]):
             self.log("val_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
@@ -251,6 +259,9 @@ class Base(pl.LightningModule):
     def test_epoch_end(self, outputs):
 
         metrics = self.compute_metrics(outputs, prefix="test_")
+        
+        if metrics is None:
+            return
         
         for i, k in enumerate([5, 10, 20]):
             self.log("test_map/map@{}".format(k), metrics["map"][i], prog_bar=True)

@@ -4,6 +4,7 @@ import numpy as np
 import torch.utils.data as data
 import sys
 import torch
+import os
 from sklearn.neighbors import NearestNeighbors
 
 from datasets.datahelpers import default_loader, imresize
@@ -58,6 +59,8 @@ class BaseDataset(data.Dataset):
         cities="",
     ):
 
+        root_dir = os.path.join(root_dir, "MSLS")
+
         if cities == "debug":
             self.cities = default_cities_debug[mode]
         elif cities in default_cities:
@@ -66,7 +69,7 @@ class BaseDataset(data.Dataset):
             self.cities = default_cities[mode]
         else:
             self.cities = cities.split(",")
-
+            
         self.dbImages = []
         self.qImages = []
         self.qidxs = []

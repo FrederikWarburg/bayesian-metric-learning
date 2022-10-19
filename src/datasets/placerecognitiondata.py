@@ -25,7 +25,7 @@ class PlaceRecognitionDataModule(pl.LightningDataModule):
     def __init__(
         self,
         data_dir: str = "path/to/dir",
-        image_size: int = 640,
+        image_size: int = 224,
         batch_size: int = 32,
         posDistThr=10,
         negDistThr=25,

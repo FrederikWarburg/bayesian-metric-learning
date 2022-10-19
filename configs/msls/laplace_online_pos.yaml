@@ -1,0 +1,34 @@
+
+
+
+# model specific
+model : "laplace_online"
+arch : "resnet50"
+pool : "gem"
+whitening : True
+pretrained : True
+latent_dim : 512
+
+# hessian
+hessian_memory_factor : 0.999
+loss_approx : "pos"
+max_pairs : 30
+type_of_triples : "hard" # easy, semihard, hard, all
+
+# logging
+check_val_every_n_epoch: 1
+
+# training
+train : True
+epochs : 20
+lr : 3.0e-7
+loss : "contrastive"
+margin : 1
+distance : "euclidean"
+
+# data specific
+data_dir : "/work3/frwa/data/"
+dataset : "msls"
+batch_size : 64
+split_query_database : False
+

@@ -133,11 +133,8 @@ class ImageRetrievalNet(nn.Module):
         tmpstr = "  (" + "meta" + "): dict( \n"  # + self.meta.__repr__() + '\n'
         tmpstr += "     architecture: {}\n".format(self.meta["architecture"])
         tmpstr += "     pooling: {}\n".format(self.meta["pooling"])
-        tmpstr += "     regional: {}\n".format(self.meta["regional"])
         tmpstr += "     whitening: {}\n".format(self.meta["whitening"])
         tmpstr += "     outputdim: {}\n".format(self.meta["outputdim"])
-        tmpstr += "     mean: {}\n".format(self.meta["mean"])
-        tmpstr += "     std: {}\n".format(self.meta["std"])
         tmpstr = tmpstr + "  )\n"
         return tmpstr
 
