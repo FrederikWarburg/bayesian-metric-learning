@@ -10,7 +10,7 @@ latent_dim : 3
 # hessian
 loss_approx : "full"
 max_pairs : 5000
-type_of_triples : "all" # easy, semihard, hard, all
+type_of_triplets : "all" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1

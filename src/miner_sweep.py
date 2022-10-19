@@ -6,13 +6,12 @@ import yaml
 
 # Example sweep configuration
 sweep_configuration = {
-    "method": "bayes",
-    "name": "margin_lr_sweep",
-    "metric": {"name": "val_map/map@5", "goal": "maximize"},
+    "method": "grid",
+    "name": "miner_sweep",
     "parameters": {
-        "lr": {"max": 1e-5, "min": 1e-7},
-        "margin": {"max": 1.0, "min": 0.0},
-    },
+        "type_of_triplets": {"values" : ["all", "hard", "semihard", "easy"]},
+        "max_pairs": {"values" : [1, 10, 100, 1000, 2500, 5000]}
+    }
 }
 
 
@@ -21,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="../configs/cub200/deterministic.yaml",
+        default="../configs/fashionmnist/laplace_posthoc_fix.yaml",
         type=str,
         help="config file",
     )
@@ -38,12 +37,13 @@ def parse_args():
 def my_train_func():
 
     wandb.init()
-    margin = wandb.config.margin
-    lr = wandb.config.lr
+    type_of_triplets = wandb.config.type_of_triplets
+    max_pairs = wandb.config.max_pairs
 
     config, args = parse_args()
 
-    main(config, args, margin=margin, lr=lr, sweep_name="margin_lr_sweep/lr_{}_margin_{}".format(lr, margin))
+    sweep_name = "miner_sweep/type_of_triplet_{}_max_pairs_{}".format(type_of_triplets, max_pairs)
+    main(config, args, type_of_triplets=type_of_triplets, max_pairs=max_pairs, sweep_name=sweep_name)
 
 
 sweep_id = wandb.sweep(sweep_configuration)

@@ -45,13 +45,17 @@ models = {"deterministic" : DeterministicModel,
           "laplace_online" : LaplaceOnlineModel,
           "laplace_posthoc" : LaplacePosthocModel}
 
-def main(config, args, margin=None, lr=None):
+def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=None, sweep_name=""):
 
     if margin is not None:
         config["margin"] = margin
     if lr is not None:
         config["lr"] = lr
-
+    if type_of_triplets is not None:
+        config["type_of_triplets"] = type_of_triplets
+    if max_pairs is not None:
+        config["max_pairs"] = max_pairs
+    
     # reproducibility
     pl.seed_everything(args.seed)
 
@@ -64,11 +68,11 @@ def main(config, args, margin=None, lr=None):
     data_module.setup()
     config["dataset_size"] = data_module.train_dataset.__len__()
 
-    name = f"{config.dataset}/{config.model}"
+    name = f"{sweep_name}{config.dataset}/{config.model}"
     if "laplace" in config.model:
         name += f"/{config.loss_approx}"
     savepath = f"../lightning_logs/{name}"
-
+    
     model = models[config.model](config, savepath=savepath)
 
     # setup logger
@@ -88,7 +92,10 @@ def main(config, args, margin=None, lr=None):
     # scale learning rate
     config.lr = config.lr * config.batch_size * torch.cuda.device_count()
 
-    callbacks = [LearningRateMonitor(logging_interval="step"), checkpoint_callback]
+    if "sweep" in sweep_name:
+        callbacks = [LearningRateMonitor(logging_interval="step")]
+    else:
+        callbacks = [LearningRateMonitor(logging_interval="step"), checkpoint_callback]
 
     # freeze model paramters
     trainer = pl.Trainer.from_argparse_args(

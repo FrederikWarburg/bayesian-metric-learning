@@ -21,7 +21,7 @@ lr : 3.0e-7
 loss : "contrastive"
 margin : 1
 distance : "euclidean"
-type_of_triples : "hard" # easy, semihard, hard, all
+type_of_triplets : "hard" # easy, semihard, hard, all
 
 # data specific
 data_dir : "/work3/frwa/data/"

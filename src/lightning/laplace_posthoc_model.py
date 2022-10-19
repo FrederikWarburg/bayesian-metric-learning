@@ -58,7 +58,7 @@ class LaplacePosthocModel(Base):
         # get mean and std of posterior
         mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
         self.hessian = torch.relu(self.hessian)
-        sigma_q = self.laplace.posterior_scale(self.hessian)
+        sigma_q = self.laplace.posterior_scale(self.hessian, prior_prec=1e8)
 
         # draw samples
         samples = self.laplace.sample(mu_q, sigma_q, n_samples)
