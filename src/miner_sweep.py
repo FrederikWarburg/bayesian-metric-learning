@@ -10,7 +10,7 @@ sweep_configuration = {
     "name": "miner_sweep",
     "parameters": {
         "type_of_triplets": {"values" : ["all", "hard", "semihard", "easy"]},
-        "max_pairs": {"values" : [1, 10, 100, 1000, 2500, 5000]}
+        "max_pairs": {"values" : [1, 10, 50, 100, 500, 1000, 5000]}
     }
 }
 
