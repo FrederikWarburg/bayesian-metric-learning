@@ -3,6 +3,9 @@ from run import main
 import argparse
 from dotmap import DotMap
 import yaml
+#import multiprocessing as mp
+from multiprocessing import Process
+
 
 # Example sweep configuration
 sweep_configuration = {
@@ -10,7 +13,8 @@ sweep_configuration = {
     "name": "miner_sweep",
     "parameters": {
         "type_of_triplets": {"values" : ["all", "hard", "semihard", "easy"]},
-        "max_pairs": {"values" : [1, 10, 50, 100, 500, 1000, 5000]}
+        "max_pairs": {"values" : [1, 10, 50, 100, 500, 1000, 5000]},
+        # "test_n_samples" : {"values" : [5, 10, 50, 100]}
     }
 }
 
@@ -20,7 +24,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="../configs/fashionmnist/laplace_posthoc_fix.yaml",
+        default="../configs/fashionmnist/laplace_online_full.yaml",
         type=str,
         help="config file",
     )
@@ -35,10 +39,11 @@ def parse_args():
     return config, args
 
 def my_train_func():
-
+    print("begin!")
     wandb.init()
     type_of_triplets = wandb.config.type_of_triplets
     max_pairs = wandb.config.max_pairs
+    # test_n_samples = wandb.config.test_n_samples
 
     config, args = parse_args()
 
@@ -49,4 +54,14 @@ def my_train_func():
 sweep_id = wandb.sweep(sweep_configuration)
 
 # run the sweep
-wandb.agent(sweep_id, function=my_train_func)
+agents = 8
+
+procs = []
+for process in range(agents):
+    proc = Process(target=wandb.agent, args=(sweep_id, my_train_func, ))
+    proc.start()
+    procs.append(proc)
+
+# complete the processes
+for proc in procs:
+    proc.join()

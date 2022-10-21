@@ -33,10 +33,12 @@ class Base(pl.LightningModule):
 
         self.args = args
         self.model = configure_model(args)
-        self.train_n_samples = 1
-        self.val_n_samples = 5
-        self.test_n_samples = 100
-
+        self.train_n_samples = args.get("train_n_samples", 1)
+        self.val_n_samples = args.get("val_n_samples", 5)
+        self.test_n_samples = args.get("test_n_samples", 100)
+        
+        print("==> test n_samples: ", self.test_n_samples)
+        
         ### pytorch-metric-learning stuff ###
         if args.distance == "cosine":
             self.distance = distances.CosineSimilarity()

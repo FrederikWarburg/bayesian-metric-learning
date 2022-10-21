@@ -45,7 +45,7 @@ models = {"deterministic" : DeterministicModel,
           "laplace_online" : LaplaceOnlineModel,
           "laplace_posthoc" : LaplacePosthocModel}
 
-def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=None, sweep_name=""):
+def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=None, test_n_samples=None, sweep_name=""):
 
     if margin is not None:
         config["margin"] = margin
@@ -55,6 +55,8 @@ def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=No
         config["type_of_triplets"] = type_of_triplets
     if max_pairs is not None:
         config["max_pairs"] = max_pairs
+    if test_n_samples is not None:
+        config["test_n_samples"] = test_n_samples
     
     # reproducibility
     pl.seed_everything(args.seed)
