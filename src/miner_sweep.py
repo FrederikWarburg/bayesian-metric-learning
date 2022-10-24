@@ -54,7 +54,7 @@ def my_train_func():
 sweep_id = wandb.sweep(sweep_configuration)
 
 # run the sweep
-agents = 8
+agents = 4
 
 procs = []
 for process in range(agents):
