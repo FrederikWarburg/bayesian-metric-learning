@@ -7,7 +7,7 @@
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 1
 ### -- Select the resources: 1 gpu in exclusive process mode --
-#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -gpu "num=1"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
 #BSUB -W 24:00
 # request 5GB of system-memory
@@ -32,4 +32,4 @@ module load cuda/11.3
 module load gcc/9.2.0 
 source activate metric_learning
 
-python miner_sweep.py
+CUDA_VISIBLE_DEVICES=0 python miner_sweep.py
