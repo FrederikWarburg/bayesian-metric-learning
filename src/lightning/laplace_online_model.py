@@ -16,25 +16,28 @@ from tqdm import tqdm
 class LaplaceOnlineModel(Base):
     def __init__(self, args, savepath):
         super().__init__(args, savepath)
-        
+
         self.max_pairs = args.max_pairs
 
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
 
-        self.hessian_calculator = HessianCalculator(wrt="weight",
-                                                    loss_func=f"contrastive_{args.loss_approx}",
-                                                    shape="diagonal",
-                                                    speed="half")
+        self.hessian_calculator = HessianCalculator(
+            wrt="weight",
+            loss_func=f"contrastive_{args.loss_approx}",
+            shape="diagonal",
+            speed="half",
+        )
 
         self.laplace = DiagLaplace()
 
         self.dataset_size = args.dataset_size
-        hessian = self.laplace.init_hessian(self.dataset_size, self.model.linear, "cuda:0")
+        hessian = self.laplace.init_hessian(
+            self.dataset_size, self.model.linear, "cuda:0"
+        )
         self.register_buffer("hessian", hessian)
-         
-        self.hessian_memory_factor = args.hessian_memory_factor
 
+        self.hessian_memory_factor = args.hessian_memory_factor
 
     def training_step(self, batch, batch_idx):
 
@@ -66,13 +69,19 @@ class LaplaceOnlineModel(Base):
             with torch.inference_mode():
 
                 # randomly choose 5000 pairs if more than 5000 pairs available.
-                #TODO: decide what to do. What pairs should we use to compute the hessian over?
+                # TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
                 if len(indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(indices_tuple[0].size(0))[:self.max_pairs]
-                    indices_tuple = (indices_tuple[0][idx], indices_tuple[1][idx], indices_tuple[2][idx])
+                    idx = torch.randperm(indices_tuple[0].size(0))[: self.max_pairs]
+                    indices_tuple = (
+                        indices_tuple[0][idx],
+                        indices_tuple[1][idx],
+                        indices_tuple[2][idx],
+                    )
 
-                h_s = self.hessian_calculator.compute_hessian(x.detach(), self.model.linear, indices_tuple)
+                h_s = self.hessian_calculator.compute_hessian(
+                    x.detach(), self.model.linear, indices_tuple
+                )
                 h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
 
             if hessian is None:
@@ -121,20 +130,22 @@ class LaplaceOnlineModel(Base):
         zs = torch.stack(zs)
 
         # compute statistics
-        z_mu = zs.mean(dim=0) 
+        z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
 
         # put mean parameters back
         vector_to_parameters(mu_q, self.model.linear.parameters())
 
-        return {"z_mu" : z_mu, "z_sigma" : z_sigma, "z_samples": zs.permute(1,0,2)}
-
+        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples": zs.permute(1, 0, 2)}
 
     def compute_loss(self, z, y, indices_tuple):
 
         # this a hack: pytorch-metric-learning does not use the labels if indices_tuple is provided,
         # however, the shape of the labels are required to be 1D.
         place_holder = torch.zeros(y.size(0), device=y.device)
+
+        if self.args.loss == "arccos":
+            z = z / torch.norm(z, dim=-1, keepdim=True)
 
         loss = self.criterion(z, place_holder, indices_tuple)
 

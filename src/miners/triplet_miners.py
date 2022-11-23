@@ -3,6 +3,7 @@ import torch
 from pytorch_metric_learning.utils import loss_and_miner_utils as lmu
 from pytorch_metric_learning.miners.base_miner import BaseTupleMiner
 
+
 class TripletMarginMiner(BaseTupleMiner):
     """
     Returns triplets that violate the margin
@@ -32,7 +33,7 @@ class TripletMarginMiner(BaseTupleMiner):
         mat = self.distance(embeddings, ref_emb)
         ap_dist = mat[anchor_idx, positive_idx]
         an_dist = mat[anchor_idx, negative_idx]
-        
+
         triplet_margin = (
             ap_dist - an_dist if self.distance.is_inverted else an_dist - ap_dist
         )
@@ -47,7 +48,7 @@ class TripletMarginMiner(BaseTupleMiner):
                 threshold_condition &= triplet_margin > 0
 
         self.set_stats(ap_dist, an_dist, triplet_margin)
-        
+
         # Triplet that violates the triplet constraint
         if self.type_of_triplets != "none":
             anchor_idx = anchor_idx[threshold_condition]

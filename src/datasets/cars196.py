@@ -6,17 +6,22 @@ from PIL import Image
 import os
 from scipy.io import loadmat
 
+
 class TrainDataset(Dataset):
     def __init__(self, data_dir):
 
         dataset_path = os.path.join(data_dir, "cars196")
         self.image_path = dataset_path
-        data_train = np.loadtxt(os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str)
-        names_train = [f"cars_train/{x}" for x in data_train[:,0]]
-        
-        data_test = np.loadtxt(os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str)
-        names_test = [f"cars_test/{x}" for x in data_test[:,0]]
-        
+        data_train = np.loadtxt(
+            os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str
+        )
+        names_train = [f"cars_train/{x}" for x in data_train[:, 0]]
+
+        data_test = np.loadtxt(
+            os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str
+        )
+        names_test = [f"cars_test/{x}" for x in data_test[:, 0]]
+
         data = np.concatenate((data_train, data_test), axis=0)
 
         self.labels = data[:, -1].astype(int)
@@ -53,15 +58,19 @@ class TrainDataset(Dataset):
 
 class TestDataset(Dataset):
     def __init__(self, data_dir):
-        
+
         dataset_path = os.path.join(data_dir, "cars196")
         self.image_path = dataset_path
-        data_train = np.loadtxt(os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str)
-        names_train = [f"cars_train/{x}" for x in data_train[:,0]]
-        
-        data_test = np.loadtxt(os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str)
-        names_test = [f"cars_test/{x}" for x in data_test[:,0]]
-        
+        data_train = np.loadtxt(
+            os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str
+        )
+        names_train = [f"cars_train/{x}" for x in data_train[:, 0]]
+
+        data_test = np.loadtxt(
+            os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str
+        )
+        names_test = [f"cars_test/{x}" for x in data_test[:, 0]]
+
         data = np.concatenate((data_train, data_test), axis=0)
 
         self.labels = data[:, -1].astype(int)

@@ -40,12 +40,24 @@ def parse_args():
     return config, args
 
 
-models = {"deterministic" : DeterministicModel,
-          "pfe" : PfeModel,
-          "laplace_online" : LaplaceOnlineModel,
-          "laplace_posthoc" : LaplacePosthocModel}
+models = {
+    "deterministic": DeterministicModel,
+    "pfe": PfeModel,
+    "laplace_online": LaplaceOnlineModel,
+    "laplace_posthoc": LaplacePosthocModel,
+}
 
-def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=None, test_n_samples=None, sweep_name=""):
+
+def main(
+    config,
+    args,
+    margin=None,
+    lr=None,
+    type_of_triplets=None,
+    max_pairs=None,
+    test_n_samples=None,
+    sweep_name="",
+):
 
     if margin is not None:
         config["margin"] = margin
@@ -57,7 +69,7 @@ def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=No
         config["max_pairs"] = max_pairs
     if test_n_samples is not None:
         config["test_n_samples"] = test_n_samples
-    
+
     # reproducibility
     pl.seed_everything(args.seed)
 
@@ -72,9 +84,10 @@ def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=No
 
     name = f"{sweep_name}{config.dataset}/{config.model}"
     if "laplace" in config.model:
+        name += f"/{config.loss}"
         name += f"/{config.loss_approx}"
     savepath = f"../lightning_logs/{name}"
-    
+
     model = models[config.model](config, savepath=savepath)
 
     # setup logger
@@ -112,15 +125,15 @@ def main(config, args, margin=None, lr=None, type_of_triplets=None, max_pairs=No
         callbacks=callbacks,
     )
 
-    #TODO: implement loading model to avoid retraining.
+    # TODO: implement loading model to avoid retraining.
 
     if config.model in ("laplace_posthoc"):
-        loguru_logger.info(f"Start training!")   
+        loguru_logger.info(f"Start training!")
         model.fit(datamodule=data_module)
 
     else:
-        loguru_logger.info(f"Start testing!")   
-        #trainer.test(model, datamodule=data_module)
+        loguru_logger.info(f"Start testing!")
+        # trainer.test(model, datamodule=data_module)
 
         loguru_logger.info(f"Start training!")
         trainer.fit(model, datamodule=data_module)

@@ -3,7 +3,8 @@ from run import main
 import argparse
 from dotmap import DotMap
 import yaml
-#import multiprocessing as mp
+
+# import multiprocessing as mp
 from multiprocessing import Process
 
 
@@ -12,10 +13,10 @@ sweep_configuration = {
     "method": "grid",
     "name": "miner_sweep",
     "parameters": {
-        "type_of_triplets": {"values" : ["all", "hard", "semihard", "easy"]},
-        "max_pairs": {"values" : [1, 10, 50, 100, 500, 1000, 5000]},
+        "type_of_triplets": {"values": ["all", "hard", "semihard", "easy"]},
+        "max_pairs": {"values": [1, 10, 50, 100, 500, 1000, 5000]},
         # "test_n_samples" : {"values" : [5, 10, 50, 100]}
-    }
+    },
 }
 
 
@@ -38,6 +39,7 @@ def parse_args():
 
     return config, args
 
+
 def my_train_func():
     print("begin!")
     wandb.init()
@@ -47,8 +49,16 @@ def my_train_func():
 
     config, args = parse_args()
 
-    sweep_name = "miner_sweep/type_of_triplet_{}_max_pairs_{}".format(type_of_triplets, max_pairs)
-    main(config, args, type_of_triplets=type_of_triplets, max_pairs=max_pairs, sweep_name=sweep_name)
+    sweep_name = "miner_sweep/type_of_triplet_{}_max_pairs_{}".format(
+        type_of_triplets, max_pairs
+    )
+    main(
+        config,
+        args,
+        type_of_triplets=type_of_triplets,
+        max_pairs=max_pairs,
+        sweep_name=sweep_name,
+    )
 
 
 sweep_id = wandb.sweep(sweep_configuration)
@@ -58,7 +68,13 @@ agents = 4
 
 procs = []
 for process in range(agents):
-    proc = Process(target=wandb.agent, args=(sweep_id, my_train_func, ))
+    proc = Process(
+        target=wandb.agent,
+        args=(
+            sweep_id,
+            my_train_func,
+        ),
+    )
     proc.start()
     procs.append(proc)
 

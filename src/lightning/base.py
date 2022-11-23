@@ -36,9 +36,9 @@ class Base(pl.LightningModule):
         self.train_n_samples = args.get("train_n_samples", 1)
         self.val_n_samples = args.get("val_n_samples", 5)
         self.test_n_samples = args.get("test_n_samples", 100)
-        
+
         print("==> test n_samples: ", self.test_n_samples)
-        
+
         ### pytorch-metric-learning stuff ###
         if args.distance == "cosine":
             self.distance = distances.CosineSimilarity()
@@ -65,7 +65,7 @@ class Base(pl.LightningModule):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets=args.type_of_triplets, # [easy, hard, semihard, all]
+                type_of_triplets=args.type_of_triplets,  # [easy, hard, semihard, all]
             )
 
         self.counter = 0
@@ -78,7 +78,7 @@ class Base(pl.LightningModule):
         self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
-        
+
         x, y = self.format_batch(batch)
 
         output = self.forward(x)
@@ -134,7 +134,7 @@ class Base(pl.LightningModule):
         raise NotImplementedError
 
     def forward_step(self, batch, batch_idx, dataloader_idx, n_samples=1):
-        
+
         if self.place_rec:
             x, index, utm = batch
         else:
@@ -142,7 +142,11 @@ class Base(pl.LightningModule):
 
         output = self.forward(x, n_samples)
 
-        o = {"z_mu": output["z_mu"].cpu()}
+        # ensure that features are l2 normalized
+        z_mu = output["z_mu"]
+        z_mu = z_mu / torch.norm(z_mu, dim=-1, keepdim=True)
+
+        o = {"z_mu": z_mu.cpu()}
 
         if self.place_rec:
             o["index"] = torch.stack(index).cpu()
@@ -154,7 +158,10 @@ class Base(pl.LightningModule):
             o["z_sigma"] = output["z_sigma"].cpu()
 
         if "z_samples" in output:
-            o["z_samples"] = output["z_samples"].cpu()
+            z_samples = output["z_samples"]
+            # ensure that samples are also l2 normalize[[d
+            z_samples = z_samples / torch.norm(z_samples, dim=-1, keepdim=True)
+            o["z_samples"] = z_samples.cpu()
 
         return o
 
@@ -177,7 +184,7 @@ class Base(pl.LightningModule):
             z_muQ = z_mu
             z_muDb = None
         else:
-            
+
             index = torch.cat([o["index"] for o in outputs], dim=1)
             utm = torch.cat([o["utm"] for o in outputs])
 
@@ -225,10 +232,10 @@ class Base(pl.LightningModule):
         else:
             id = self.format_outputs(outputs)
             ood = None
-        
+
         if id is None:
             return None
-        
+
         ranks = compute_rank(id["z_muQ"], id["z_muDb"])
         metrics = evaluate(ranks, id["pidxs"])
 
@@ -261,10 +268,10 @@ class Base(pl.LightningModule):
     def test_epoch_end(self, outputs):
 
         metrics = self.compute_metrics(outputs, prefix="test_")
-        
+
         if metrics is None:
             return
-        
+
         for i, k in enumerate([5, 10, 20]):
             self.log("test_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
@@ -278,13 +285,13 @@ class Base(pl.LightningModule):
         # dump to json
         with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
             json.dump(metrics, file)
-            
+
         # dump to csv to easy cp to google drive
-        with open(os.path.join(self.savepath, "metrics.csv"), 'w') as f:
+        with open(os.path.join(self.savepath, "metrics.csv"), "w") as f:
             for key in ["recall", "map", "auroc", "auprc", "ausc", "ece"]:
                 if key not in metrics:
                     metrics[key] = "nan"
-                
+
                 if key == "recall":
                     for i, k in enumerate([1, 5, 10, 20]):
                         f.write("%s\n" % (metrics[key][i]))

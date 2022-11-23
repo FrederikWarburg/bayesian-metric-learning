@@ -69,7 +69,7 @@ class BaseDataset(data.Dataset):
             self.cities = default_cities[mode]
         else:
             self.cities = cities.split(",")
-            
+
         self.dbImages = []
         self.qImages = []
         self.qidxs = []

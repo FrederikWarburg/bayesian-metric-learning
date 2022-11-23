@@ -6,18 +6,33 @@ import sys
 
 sys.path.append("../stochman")
 from stochman import nnj
-from stochman.hessian import HessianCalculator
+from stochman import ContrastiveHessianCalculator, ArccosHessianCalculator
 from stochman.laplace import DiagLaplace
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
 
+hessian_calculators = {
+    "contrastive_pos": ContrastiveHessianCalculator,
+    "contrastive_fixed": ContrastiveHessianCalculator,
+    "contrastive_full": ContrastiveHessianCalculator,
+    "arccos_pos": ArccosHessianCalculator,
+    "arccos_fixed": ArccosHessianCalculator,
+    "arccos_full": ArccosHessianCalculator,
+}
 
 
 def rename_keys(statedict):
 
     new_dict = {k.replace("model.", ""): statedict[k] for k in statedict.keys()}
     return new_dict
+
+
+def remove_normalization_layer(model):
+
+    if isinstance(model[-1], nnj.L2Norm):
+        return nnj.Sequential(*model[:-1], add_hooks=True)
+    return model
 
 
 class LaplacePosthocModel(Base):
@@ -39,10 +54,14 @@ class LaplacePosthocModel(Base):
         # load model parameters
         self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
 
-        self.hessian_calculator = HessianCalculator(wrt="weight",
-                                                    loss_func=f"contrastive_{args.loss_approx}",
-                                                    shape="diagonal",
-                                                    speed="half")
+        loss_func = f"{args.loss}_{args.loss_approx}"
+        self.hessian_calculator = hessian_calculators[loss_func](
+            wrt="weight", loss_func=loss_func, shape="diagonal", speed="half"
+        )
+
+        # if arccos, then remove normalization layer from model
+        if self.args.loss == "arccos":
+            self.model.linear = remove_normalization_layer(self.model.linear)
 
         self.laplace = DiagLaplace()
 
@@ -53,8 +72,8 @@ class LaplacePosthocModel(Base):
         if not hasattr(self, "hessian"):
             print("==> no hessian found!")
             z = self.model.linear(x)
-            return {"z_mu" : z}
-        
+            return {"z_mu": z}
+
         # get mean and std of posterior
         mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
         self.hessian = torch.relu(self.hessian)
@@ -77,13 +96,13 @@ class LaplacePosthocModel(Base):
         zs = torch.stack(zs)
 
         # compute statistics
-        z_mu = zs.mean(dim=0) 
+        z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
 
         # put mean parameters back
         vector_to_parameters(mu_q, self.model.linear.parameters())
 
-        return {"z_mu" : z_mu, "z_sigma" : z_sigma, "z_samples": zs.permute(1,0,2)}
+        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples": zs.permute(1, 0, 2)}
 
     def fit(self, datamodule):
 
@@ -109,10 +128,16 @@ class LaplacePosthocModel(Base):
 
                 # randomly choose 5000 pairs if more than 5000 pairs available.
                 if len(indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(indices_tuple[0].size(0))[:self.max_pairs]
-                    indices_tuple = (indices_tuple[0][idx], indices_tuple[1][idx], indices_tuple[2][idx])
+                    idx = torch.randperm(indices_tuple[0].size(0))[: self.max_pairs]
+                    indices_tuple = (
+                        indices_tuple[0][idx],
+                        indices_tuple[1][idx],
+                        indices_tuple[2][idx],
+                    )
 
-                h = self.hessian_calculator.compute_hessian(x, self.model.linear, indices_tuple)
+                h = self.hessian_calculator.compute_hessian(
+                    x, self.model.linear, indices_tuple
+                )
 
                 if hessian is None:
                     hessian = h
@@ -120,7 +145,7 @@ class LaplacePosthocModel(Base):
                     hessian += h
 
         self.register_buffer("hessian", hessian)
-        
+
         savepath = f"{self.savepath.replace('/results', '')}/checkpoints"
         os.makedirs(savepath, exist_ok=True)
         torch.save(self.state_dict(), savepath + "/best.ckpt")

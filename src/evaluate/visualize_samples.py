@@ -32,4 +32,3 @@ def plot_samples(
         xlabel=f"Latent dim {latent1}",
         ylabel=f"Latent dim {latent2}",
     )
-

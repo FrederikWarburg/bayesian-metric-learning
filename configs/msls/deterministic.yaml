@@ -24,7 +24,7 @@ distance : "euclidean"
 type_of_triplets : "semihard" # easy, semihard, hard, all
 
 # data specific
-data_dir : "/work3/frwa/data/"
+data_dir : "/home/warburg/data/"
 dataset : "msls"
 batch_size : 64
 split_query_database : False

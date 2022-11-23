@@ -35,6 +35,7 @@ def parse_args():
 
     return config, args
 
+
 def my_train_func():
 
     wandb.init()
@@ -43,7 +44,13 @@ def my_train_func():
 
     config, args = parse_args()
 
-    main(config, args, margin=margin, lr=lr, sweep_name="margin_lr_sweep/lr_{}_margin_{}".format(lr, margin))
+    main(
+        config,
+        args,
+        margin=margin,
+        lr=lr,
+        sweep_name="margin_lr_sweep/lr_{}_margin_{}".format(lr, margin),
+    )
 
 
 sweep_id = wandb.sweep(sweep_configuration)
