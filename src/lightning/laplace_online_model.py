@@ -6,27 +6,34 @@ import sys
 
 sys.path.append("../stochman")
 from stochman import nnj
-from stochman.hessian import HessianCalculator
+from stochman import ContrastiveHessianCalculator, ArccosHessianCalculator
 from stochman.laplace import DiagLaplace
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
 
 
+hessian_calculators = {
+    "contrastive_pos": ContrastiveHessianCalculator,
+    "contrastive_fix": ContrastiveHessianCalculator,
+    "contrastive_full": ContrastiveHessianCalculator,
+    "arccos_pos": ArccosHessianCalculator,
+    #"arccos_fix": ArccosHessianCalculator,
+    "arccos_full": ArccosHessianCalculator,
+}
+
 class LaplaceOnlineModel(Base):
-    def __init__(self, args, savepath):
-        super().__init__(args, savepath)
+    def __init__(self, args, savepath, seed):
+        super().__init__(args, savepath, seed)
 
         self.max_pairs = args.max_pairs
 
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
 
-        self.hessian_calculator = HessianCalculator(
-            wrt="weight",
-            loss_func=f"contrastive_{args.loss_approx}",
-            shape="diagonal",
-            speed="half",
+        loss_func = f"{args.loss}_{args.loss_approx}"
+        self.hessian_calculator = hessian_calculators[loss_func](
+            wrt="weight", loss_func=loss_func, shape="diagonal", speed="half"
         )
 
         self.laplace = DiagLaplace()

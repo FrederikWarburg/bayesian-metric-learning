@@ -14,10 +14,10 @@ from tqdm import tqdm
 
 hessian_calculators = {
     "contrastive_pos": ContrastiveHessianCalculator,
-    "contrastive_fixed": ContrastiveHessianCalculator,
+    "contrastive_fix": ContrastiveHessianCalculator,
     "contrastive_full": ContrastiveHessianCalculator,
     "arccos_pos": ArccosHessianCalculator,
-    "arccos_fixed": ArccosHessianCalculator,
+    #"arccos_fix": ArccosHessianCalculator,
     "arccos_full": ArccosHessianCalculator,
 }
 
@@ -36,14 +36,15 @@ def remove_normalization_layer(model):
 
 
 class LaplacePosthocModel(Base):
-    def __init__(self, args, savepath):
-        super().__init__(args, savepath)
+    def __init__(self, args, savepath, seed):
+        super().__init__(args, savepath, seed)
 
         self.max_pairs = args.max_pairs
 
         # load model checkpoint
-        if not os.path.isfile(args.resume):
-            print(f"path {args.resume} not found.")
+        resume = os.path.join(args.resume, str(seed), "checkpoints/best.ckpt")
+        if not os.path.isfile(resume):
+            print(f"path {resume} not found.")
             print("laplace posthoc requires a pretrained model")
             print("fix path and try again.")
             sys.exit()
@@ -52,7 +53,7 @@ class LaplacePosthocModel(Base):
         self.model.linear = convert_to_stochman(self.model.linear)
 
         # load model parameters
-        self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
+        self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
 
         loss_func = f"{args.loss}_{args.loss_approx}"
         self.hessian_calculator = hessian_calculators[loss_func](

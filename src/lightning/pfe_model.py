@@ -75,17 +75,18 @@ def rename_keys(statedict):
 
 
 class PfeModel(Base):
-    def __init__(self, args, savepath):
-        super().__init__(args, savepath)
+    def __init__(self, args, savepath, seed):
+        super().__init__(args, savepath, seed)
 
         # load model checkpoint
-        if not os.path.isfile(args.resume):
-            print(f"path {args.resume} not found.")
+        resume = os.path.join(args.resume, str(seed), "checkpoints/best.ckpt")
+        if not os.path.isfile(resume):
+            print(f"path {resume} not found.")
             print("pfe requires a pretrained model")
             print("fix path and try again.")
             sys.exit()
 
-        self.model.load_state_dict(rename_keys(torch.load(args.resume)["state_dict"]))
+        self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
 
         # encapsolate model in an uncertainty module
         # and freeze deterministic part of model

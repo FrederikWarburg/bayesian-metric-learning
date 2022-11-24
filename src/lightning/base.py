@@ -28,7 +28,7 @@ import csv
 
 
 class Base(pl.LightningModule):
-    def __init__(self, args, savepath):
+    def __init__(self, args, savepath, seed):
         super().__init__()
 
         self.args = args

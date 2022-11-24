@@ -6,7 +6,7 @@ model : "laplace_posthoc"
 arch : "resnet50"
 pool : "gem"
 whitening : True
-resume : "../lightning_logs/cub200/deterministic/checkpoints/best.ckpt"
+resume : "../lightning_logs/cub200/deterministic"
 latent_dim : 512
 
 # hessian

@@ -7,7 +7,7 @@ resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-resume : "../lightning_logs/msls/deterministic/checkpoints/best.ckpt"
+resume : "../lightning_logs/msls/deterministic"
 latent_dim : 512
 
 # logging

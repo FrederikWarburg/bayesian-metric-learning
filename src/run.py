@@ -31,12 +31,12 @@ def parse_args():
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
     args = parser.parse_args()
-
+    
     with open(args.config) as file:
         config = yaml.full_load(file)
 
     config = DotMap(config)
-
+    
     return config, args
 
 
@@ -82,13 +82,13 @@ def main(
     data_module.setup()
     config["dataset_size"] = data_module.train_dataset.__len__()
 
-    name = f"{sweep_name}{config.dataset}/{config.model}"
+    name = f"{sweep_name}{config.dataset}/{config.model}/{args.seed}"
     if "laplace" in config.model:
         name += f"/{config.loss}"
         name += f"/{config.loss_approx}"
     savepath = f"../lightning_logs/{name}"
 
-    model = models[config.model](config, savepath=savepath)
+    model = models[config.model](config, savepath=savepath, seed=args.seed)
 
     # setup logger
     os.makedirs("../logs", exist_ok=True)
@@ -147,5 +147,5 @@ if __name__ == "__main__":
     # parse arguments
     config, args = parse_args()
     print(config.margin, config.lr)
-
+    
     main(config, args)

@@ -3,8 +3,8 @@ import torch
 
 
 class DeterministicModel(Base):
-    def __init__(self, args, savepath):
-        super().__init__(args, savepath)
+    def __init__(self, args, savepath, seed):
+        super().__init__(args, savepath, seed)
 
     def forward(self, x, n_samples=1):
 

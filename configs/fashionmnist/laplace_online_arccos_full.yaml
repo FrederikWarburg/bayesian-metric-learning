@@ -2,11 +2,15 @@
 
 
 # model specific
-model : "pfe"
-resume : ""
+model : "laplace_online"
 arch : "linear"
 latent_dim : 3
-resume : "../lightning_logs/fashionmnist/deterministic"
+
+# hessian
+hessian_memory_factor : 0.999
+loss_approx : "full"
+max_pairs : 5000
+type_of_triplets : "all" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1
@@ -15,12 +19,13 @@ check_val_every_n_epoch: 1
 train : True
 epochs : 20
 lr : 0.001
-loss : "contrastive"
+loss : "arccos"
 margin : 0.7
 distance : "euclidean"
 
 # data specific
 data_dir : "/home/warburg/data/"
 dataset : "fashionmnist"
-batch_size : 256
+batch_size : 64
 split_query_database : False
+
