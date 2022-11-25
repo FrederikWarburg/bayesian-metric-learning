@@ -159,7 +159,7 @@ class Base(pl.LightningModule):
 
         if "z_samples" in output:
             z_samples = output["z_samples"]
-            # ensure that samples are also l2 normalize[[d
+            # ensure that samples are also l2 normalize
             z_samples = z_samples / torch.norm(z_samples, dim=-1, keepdim=True)
             o["z_samples"] = z_samples.cpu()
 

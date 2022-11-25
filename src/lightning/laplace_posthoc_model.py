@@ -17,7 +17,7 @@ hessian_calculators = {
     "contrastive_fix": ContrastiveHessianCalculator,
     "contrastive_full": ContrastiveHessianCalculator,
     "arccos_pos": ArccosHessianCalculator,
-    #"arccos_fix": ArccosHessianCalculator,
+    # "arccos_fix": ArccosHessianCalculator,
     "arccos_full": ArccosHessianCalculator,
 }
 

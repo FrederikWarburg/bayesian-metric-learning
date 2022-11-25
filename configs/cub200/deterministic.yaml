@@ -16,7 +16,7 @@ check_val_every_n_epoch : 1
 
 # training
 train : True
-epochs : 10
+epochs : 20
 lr : 3.0e-7
 loss : "contrastive"
 margin : 1

@@ -7,7 +7,7 @@ def configure_model(args):
     ######
     # initialize model dict
     ######
-    
+
     if args.dataset in ("mnist", "fashionmnist"):
         model = MnistLinearNet(args.latent_dim)
     else:
@@ -28,15 +28,18 @@ def configure_model(args):
 
 
 def get_model_parameters(model, args):
-    
-    if hasattr(model, "pool"):
-        parameters = []
+
+    if hasattr(model, "fc_log_var"):
+        parameters = [{"params": model.fc_log_var.parameters()}]
         
+    elif hasattr(model, "pool"):
+        parameters = []
+
         # parameters split into features, pool, whitening
         # IMPORTANT: no weight decay for pooling parameter p in GeM or regional-GeM
 
         # add feature parameters
-        parameters.append({"params": model.backbone.parameters()})
+        parameters.append({"params": model.features.parameters()})
 
         # global, only pooling parameter p weight decay should be 0
         parameters.append(

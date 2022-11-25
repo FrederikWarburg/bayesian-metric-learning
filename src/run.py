@@ -31,12 +31,12 @@ def parse_args():
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
     args = parser.parse_args()
-    
+
     with open(args.config) as file:
         config = yaml.full_load(file)
 
     config = DotMap(config)
-    
+
     return config, args
 
 
@@ -147,5 +147,5 @@ if __name__ == "__main__":
     # parse arguments
     config, args = parse_args()
     print(config.margin, config.lr)
-    
+
     main(config, args)

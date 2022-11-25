@@ -18,9 +18,10 @@ hessian_calculators = {
     "contrastive_fix": ContrastiveHessianCalculator,
     "contrastive_full": ContrastiveHessianCalculator,
     "arccos_pos": ArccosHessianCalculator,
-    #"arccos_fix": ArccosHessianCalculator,
+    # "arccos_fix": ArccosHessianCalculator,
     "arccos_full": ArccosHessianCalculator,
 }
+
 
 class LaplaceOnlineModel(Base):
     def __init__(self, args, savepath, seed):

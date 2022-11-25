@@ -11,12 +11,25 @@ class UncertaintyModule(nn.Module):
     def __init__(self, model):
         super().__init__()
 
-        self.backbone = model.backbone
-        self.fc_mu = model.linear
+        if hasattr(model, "pool"):
+            self.features = model.features
+            self.pool = model.pool
 
-        # Freeze backbone parameters
-        for param in self.backbone.parameters():
-            param.requires_grad = False
+            # Freeze backbone parameters
+            for param in self.features.parameters():
+                param.requires_grad = False
+
+            # Freeze pool parameters
+            for param in self.pool.parameters():
+                param.requires_grad = False
+        else:
+            self.backbone = model.backbone
+        
+            # Freeze backbone parameters
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
+        self.fc_mu = model.linear
 
         # Freeze backbone parameters
         for param in self.fc_mu.parameters():
@@ -45,10 +58,11 @@ class UncertaintyModule(nn.Module):
         b, c, h, w = x.shape
 
         # Non-trainable
-        features = self.backbone(x)
-
-        # flatten
-        features = features.view(b, -1)
+        if hasattr(self, "pool"):
+            features = self.features(x)
+            features = self.pool(features)
+        else:
+            features = self.backbone(x)
 
         mu = self.fc_mu(features)
 
