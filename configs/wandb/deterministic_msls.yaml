@@ -1,0 +1,14 @@
+program: sweep.py
+method: bayes
+name: "msls_deterministic"
+metric:
+  name: test_metric/map@5
+  goal: maximize
+parameters:
+  lr:
+    min: 1.0e-9
+    max: 1.0e-5
+  type_of_triplets:
+    values: ["hard", "semihard"]
+  config: 
+    value: '../configs/msls/deterministic.yaml'

@@ -9,6 +9,7 @@ pool : "gem"
 whitening : True
 pretrained : True
 latent_dim : 512
+type_of_triplets : "semihard"
 
 # logging
 log_dir : "../results"

@@ -11,6 +11,10 @@ from stochman.laplace import DiagLaplace
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
+import wandb
+
+from miners.custom_miners import TripletMarginMinerPR
+from miners.triplet_miners import TripletMarginMiner
 
 
 hessian_calculators = {
@@ -47,11 +51,31 @@ class LaplaceOnlineModel(Base):
 
         self.hessian_memory_factor = args.hessian_memory_factor
 
+        # hessian miners
+        if self.place_rec:
+            self.hessian_miner = TripletMarginMinerPR(
+                margin=args.margin,
+                collect_stats=True,
+                type_of_triplets=args.type_of_triplets_hessian,
+                posDistThr=self.args.posDistThr,
+                negDistThr=self.args.negDistThr,
+                distance=self.distance,
+            )
+        else:
+            self.hessian_miner = TripletMarginMiner(
+                margin=args.margin,
+                collect_stats=True,
+                distance=self.distance,
+                type_of_triplets=args.type_of_triplets_hessian,  # [easy, hard, semihard, all]
+            )
+
     def training_step(self, batch, batch_idx):
 
         x, y = self.format_batch(batch)
 
         x = self.model.backbone(x)
+        if hasattr(self.model, "pool"):
+            x = self.model.pool(x)
 
         # get mean and std of posterior
         sigma_q = self.laplace.posterior_scale(torch.relu(self.hessian))
@@ -76,19 +100,21 @@ class LaplaceOnlineModel(Base):
 
             with torch.inference_mode():
 
+                hessian_indices_tuple = self.get_hessian_indices_tuple(z, y)
+
                 # randomly choose 5000 pairs if more than 5000 pairs available.
                 # TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
-                if len(indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(indices_tuple[0].size(0))[: self.max_pairs]
-                    indices_tuple = (
-                        indices_tuple[0][idx],
-                        indices_tuple[1][idx],
-                        indices_tuple[2][idx],
+                if len(hessian_indices_tuple[0]) > self.max_pairs:
+                    idx = torch.randperm(hessian_indices_tuple[0].size(0))[: self.max_pairs]
+                    hessian_indices_tuple = (
+                        hessian_indices_tuple[0][idx],
+                        hessian_indices_tuple[1][idx],
+                        hessian_indices_tuple[2][idx],
                     )
 
                 h_s = self.hessian_calculator.compute_hessian(
-                    x.detach(), self.model.linear, indices_tuple
+                    x.detach(), self.model.linear, hessian_indices_tuple
                 )
                 h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
 
@@ -110,11 +136,17 @@ class LaplaceOnlineModel(Base):
                 self.log_triplets(x, indices_tuple)
             self.counter += 1
 
+        # log hessian and sigma_q
+        wandb.log({"extra/hessian" : self.hessian.sum()})
+        wandb.log({"extra/sigma_q" : sigma_q.sum()})
+
         return loss
 
     def forward(self, x, n_samples=1):
 
         x = self.model.backbone(x)
+        if hasattr(self.model, "pool"):
+            x = self.model.pool(x)
 
         # get mean and std of posterior
         mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
@@ -165,3 +197,25 @@ class LaplaceOnlineModel(Base):
         )
 
         return loss
+
+    def get_hessian_indices_tuple(self, embeddings, labels):
+
+        if self.place_rec and self.args.split_query_database:
+            b, _ = embeddings.shape
+
+            ref_emb = embeddings[b // 2 :]
+            embeddings = embeddings[: b // 2]
+
+            ref_labels = labels[b // 2 :]
+            labels = labels[: b // 2]
+        else:
+            ref_emb = None
+            ref_labels = None
+
+        indices_tuple = self.hessian_miner(embeddings, labels, ref_emb, ref_labels)
+
+        self.log("hessian_tuple_stats/an_dist", float(self.hessian_miner.neg_pair_dist))
+        self.log("hessian_tuple_stats/ap_dist", float(self.hessian_miner.pos_pair_dist))
+        self.log("hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets))
+
+        return indices_tuple

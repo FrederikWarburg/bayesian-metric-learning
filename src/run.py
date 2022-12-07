@@ -8,6 +8,7 @@ from dotmap import DotMap
 import yaml
 import os
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+import sys
 
 # data modules
 from datasets.placerecognitiondata import PlaceRecognitionDataModule
@@ -30,12 +31,15 @@ def parse_args():
         help="config file",
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
+    parser.add_argument("--validate-only", action='store_true', help="only validate")
     args = parser.parse_args()
+    config_path = args.config
 
-    with open(args.config) as file:
+    with open(config_path) as file:
         config = yaml.full_load(file)
 
     config = DotMap(config)
+    print(config)
 
     return config, args
 
@@ -51,24 +55,8 @@ models = {
 def main(
     config,
     args,
-    margin=None,
-    lr=None,
-    type_of_triplets=None,
-    max_pairs=None,
-    test_n_samples=None,
     sweep_name="",
 ):
-
-    if margin is not None:
-        config["margin"] = margin
-    if lr is not None:
-        config["lr"] = lr
-    if type_of_triplets is not None:
-        config["type_of_triplets"] = type_of_triplets
-    if max_pairs is not None:
-        config["max_pairs"] = max_pairs
-    if test_n_samples is not None:
-        config["test_n_samples"] = test_n_samples
 
     # reproducibility
     pl.seed_everything(args.seed)
@@ -125,18 +113,28 @@ def main(
         callbacks=callbacks,
     )
 
-    # TODO: implement loading model to avoid retraining.
-
-    if config.model in ("laplace_posthoc"):
-        loguru_logger.info(f"Start training!")
-        model.fit(datamodule=data_module)
-
+    if args.validate_only:
+        model_path = os.path.join(savepath, "checkpoints", "best.ckpt")
+        
+        if os.path.isfile(model_path):
+            statedict = torch.load(model_path)
+            statedict = statedict["state_dict"] if "state_dict" in statedict else statedict
+            model.load_state_dict(statedict)
+        else:
+            print("checkpoint not found at ")
+            print(model_path)
+            sys.exit()
     else:
-        loguru_logger.info(f"Start testing!")
-        # trainer.test(model, datamodule=data_module)
+        if config.model in ("laplace_posthoc"):
+            loguru_logger.info(f"Start training!")
+            model.fit(datamodule=data_module)
 
-        loguru_logger.info(f"Start training!")
-        trainer.fit(model, datamodule=data_module)
+        else:
+            loguru_logger.info(f"Start testing!")
+            # trainer.test(model, datamodule=data_module)
+
+            loguru_logger.info(f"Start training!")
+            trainer.fit(model, datamodule=data_module)
 
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)
@@ -146,6 +144,4 @@ if __name__ == "__main__":
 
     # parse arguments
     config, args = parse_args()
-    print(config.margin, config.lr)
-
     main(config, args)

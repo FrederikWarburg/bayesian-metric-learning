@@ -20,6 +20,7 @@ lr : 0.001
 loss : "contrastive"
 margin : 1
 distance : "euclidean"
+type_of_triplets : "semihard"
 
 # data specific
 data_dir : "/home/warburg/data/"

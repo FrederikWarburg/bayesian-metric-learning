@@ -39,7 +39,7 @@ def get_model_parameters(model, args):
         # IMPORTANT: no weight decay for pooling parameter p in GeM or regional-GeM
 
         # add feature parameters
-        parameters.append({"params": model.features.parameters()})
+        parameters.append({"params": model.backbone.parameters()})
 
         # global, only pooling parameter p weight decay should be 0
         parameters.append(

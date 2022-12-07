@@ -1,0 +1,11 @@
+program: sweep.py
+method: grid
+name: "cub200_deterministic"
+metric:
+  name: test_metric/map@5
+  goal: maximize
+parameters:
+  type_of_triplets:
+    values: ["hard", "semihard", "all"]
+  config: 
+    value: '../configs/cub200/deterministic.yaml'

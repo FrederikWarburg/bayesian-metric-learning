@@ -66,9 +66,15 @@ class LaplacePosthocModel(Base):
 
         self.laplace = DiagLaplace()
 
+        # register hessian. It will be overwritten when fitting model
+        hessian = torch.zeros_like(parameters_to_vector(self.model.linear.parameters()), device="cuda:0")
+        self.register_buffer("hessian", hessian)
+
     def forward(self, x, n_samples=1):
 
         x = self.model.backbone(x)
+        if hasattr(self.model, "pool"):
+            x = self.model.pool(x)
 
         if not hasattr(self, "hessian"):
             print("==> no hessian found!")
@@ -111,8 +117,6 @@ class LaplacePosthocModel(Base):
         self.model.cuda()
         self.model.eval()
 
-        hessian = None
-
         for batch in tqdm(train_loader):
             with torch.inference_mode():
 
@@ -122,6 +126,8 @@ class LaplacePosthocModel(Base):
                 y = y.cuda()
 
                 x = self.model.backbone(x)
+                if hasattr(self.model, "pool"):
+                    x = self.model.pool(x)
 
                 z_mu = self.model.linear(x)
 
@@ -140,12 +146,7 @@ class LaplacePosthocModel(Base):
                     x, self.model.linear, indices_tuple
                 )
 
-                if hessian is None:
-                    hessian = h
-                else:
-                    hessian += h
-
-        self.register_buffer("hessian", hessian)
+                self.hessian += h
 
         savepath = f"{self.savepath.replace('/results', '')}/checkpoints"
         os.makedirs(savepath, exist_ok=True)

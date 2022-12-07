@@ -10,10 +10,11 @@ pretrained : True
 latent_dim : 512
 
 # hessian
-hessian_memory_factor : 0.999
+hessian_memory_factor : 0.995
 loss_approx : "full"
 max_pairs : 30
-type_of_triplets : "hard" # easy, semihard, hard, all
+type_of_triplets : "semihard" # easy, semihard, hard, all
+type_of_triplets_hessian : "semihard" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1

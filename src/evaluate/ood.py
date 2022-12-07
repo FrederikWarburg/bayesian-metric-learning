@@ -5,6 +5,7 @@ from evaluate.visualize_samples import plot_samples
 import os
 import torchmetrics
 import torch
+import json
 
 
 def evaluate_ood(dict_in, dict_ood, vis_path, prefix):
@@ -49,6 +50,9 @@ def evaluate_ood(dict_in, dict_ood, vis_path, prefix):
 
     # plot prc
     plot_prc(pred, target, vis_path, prefix)
+
+    if "val" not in vis_path and "val" not in prefix:
+        save_data(pred, target, vis_path, prefix)
 
     return float(auroc_score.numpy()), float(auprc_score.numpy())
 
@@ -135,3 +139,13 @@ def plot_roc(pred, target, vis_path, prefix):
     plt.close()
     plt.cla()
     plt.clf()
+
+
+def save_data(pred, target, path, prefix):
+
+    data = {"pred" : pred.tolist(), 
+            "target" : target.tolist()}
+
+    os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
+    with open(os.path.join(path, "figure_data", f"{prefix}ood_curves.json"), "w") as f:
+        json.dump(data, f)

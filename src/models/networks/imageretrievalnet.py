@@ -95,25 +95,19 @@ class ImageRetrievalNet(nn.Module):
     def __init__(self, features, pool, whiten, meta):
         super(ImageRetrievalNet, self).__init__()
 
-        self.features = nn.Sequential(*features)
+        self.backbone = nn.Sequential(*features)
         self.pool = nn.Sequential(*[pool, L2Norm(), nn.Flatten()])
         self.linear = nn.Sequential(whiten, L2Norm())
 
         self.meta = meta
 
-    def backbone(self, x):
-        
-        x = self.features(x)
-        x = self.pool(x)
-
-        return x
-
     def forward(self, x, n_samples=1):
 
-        o = self.backbone(x)
-        o = self.linear(o)
+        x = self.backbone(x)
+        x = self.pool(x)
+        x = self.linear(x)
 
-        return {"z_mu": o}
+        return {"z_mu": x}
 
     def __repr__(self):
         tmpstr = super(ImageRetrievalNet, self).__repr__()[:-1]

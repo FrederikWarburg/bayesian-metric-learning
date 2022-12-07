@@ -12,11 +12,11 @@ class UncertaintyModule(nn.Module):
         super().__init__()
 
         if hasattr(model, "pool"):
-            self.features = model.features
+            self.backbone = model.backbone
             self.pool = model.pool
 
             # Freeze backbone parameters
-            for param in self.features.parameters():
+            for param in self.backbone.parameters():
                 param.requires_grad = False
 
             # Freeze pool parameters
@@ -59,7 +59,7 @@ class UncertaintyModule(nn.Module):
 
         # Non-trainable
         if hasattr(self, "pool"):
-            features = self.features(x)
+            features = self.backbone(x)
             features = self.pool(features)
         else:
             features = self.backbone(x)

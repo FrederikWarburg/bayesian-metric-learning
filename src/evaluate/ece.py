@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import torch
+import json
 
 from tqdm import tqdm
 from sklearn.neighbors import NearestNeighbors
@@ -20,12 +21,12 @@ def evaluate_ece(dict, vis_path, prefix):
     # get samples from dict
     z_samples = dict["z_samplesQ"]
     targets = dict["targets"]
-
+    
     # compute k-nn from samples
     targets, confidences, predicted = compute_knn(z_samples, targets)
 
     # compute calibration curve
-    ece, acc, conf, bin_sizes = calibration_curves(
+    ece, acc, _, bin_sizes = calibration_curves(
         targets=targets,
         confidences=confidences,
         preds=predicted,
@@ -34,7 +35,11 @@ def evaluate_ece(dict, vis_path, prefix):
     )
 
     # plot calibration curve
-    plot_calibration_curve(acc, conf, vis_path, prefix, bins=10)
+    plot_calibration_curve(acc, confidences, vis_path, prefix, bins=10)
+
+    # save data to create plot
+    if "val" not in vis_path and "val" not in prefix:
+        save_data(acc, confidences, targets, bin_sizes, vis_path, prefix)
 
     return ece
 
@@ -144,3 +149,15 @@ def plot_calibration_curve(acc, confidences, path, prefix, bins=10):
 
     # Save dir
     fig.savefig(os.path.join(path, f"{prefix}_calibration_curve.png"))
+
+
+def save_data(acc, confidences, targets, bin_sizes, path, prefix):
+
+    data = {"acc" : acc.tolist(), 
+            "confidences" : confidences.tolist(),
+            "targets" : targets.tolist(),
+            "bin_sizes" : bin_sizes.tolist()}
+
+    os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
+    with open(os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w") as f:
+        json.dump(data, f)
