@@ -13,7 +13,7 @@ CONFIG_PATHS=(#"deterministic" \
             "laplace_online_arccos_full" \
             "laplace_online_arccos_pos" \
             )
-
+CONFIG_PATHS=("mc_dropout")
 
 for f in ${CONFIG_PATHS[@]}
 do

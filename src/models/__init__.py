@@ -7,9 +7,9 @@ def configure_model(args):
     ######
     # initialize model dict
     ######
-
+    dropout_rate = args.get("dropout_rate", 0.0)
     if args.dataset in ("mnist", "fashionmnist"):
-        model = MnistLinearNet(args.latent_dim)
+        model = MnistLinearNet(args.latent_dim, dropout_rate)
     else:
         if args.pretrained:
             print(">> Using pre-trained model '{}'".format(args.arch))
@@ -21,6 +21,7 @@ def configure_model(args):
         model_params["regional"] = args.regional
         model_params["whitening"] = args.whitening
         model_params["pretrained"] = args.pretrained
+        model_params["dropout_rate"] = dropout_rate
 
         model = init_network(model_params)
 

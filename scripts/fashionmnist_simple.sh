@@ -14,12 +14,13 @@ CONFIG_PATHS=("deterministic" \
             "laplace_online_arccos_pos"
             )
 
+CONFIG_PATHS=("mcdrop")
 
 for f in ${CONFIG_PATHS[@]}
 do
     for seed in {1..5}
     do
-        CUDA_VISIBLE_DEVICES=9 python run.py --config "../configs/fashionmnist/$f.yaml" --seed $seed --validate-only
+        CUDA_VISIBLE_DEVICES=6 python run.py --config "../configs/fashionmnist/$f.yaml" --seed $seed
     done
 done
 

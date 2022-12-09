@@ -35,7 +35,7 @@ class MnistLinearNet(nn.Module):
 
 
 class MnistLinearNet(nn.Module):
-    def __init__(self, latent_dim=128):
+    def __init__(self, latent_dim=128, dropout_rate=0.0):
         super(MnistLinearNet, self).__init__()
 
         self.backbone = nn.Sequential(
@@ -47,6 +47,20 @@ class MnistLinearNet(nn.Module):
             # nn.Dropout2d(0.25),
             nn.Flatten(),
         )
+
+        if dropout_rate > 0:
+            
+            print("Using dropout rate: {}".format(dropout_rate))
+            self.backbone = nn.Sequential(
+                nn.Conv2d(1, 32, 3, 1),
+                nn.ReLU(),
+                nn.Dropout2d(dropout_rate),
+                nn.Conv2d(32, 64, 3, 1),
+                nn.ReLU(),
+                nn.MaxPool2d(2),
+                nn.Dropout2d(dropout_rate),
+                nn.Flatten(),
+            )
 
         self.linear = nn.Sequential(nn.Linear(9216, latent_dim), L2Norm())
 

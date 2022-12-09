@@ -19,6 +19,8 @@ from lightning.deterministic_model import DeterministicModel
 from lightning.laplace_posthoc_model import LaplacePosthocModel
 from lightning.laplace_online_model import LaplaceOnlineModel
 from lightning.pfe_model import PfeModel
+from lightning.mcdropout_model import MCDropoutModel
+from lightning.deep_ensemble_model import DeepEnsembleModel
 
 
 def parse_args():
@@ -49,6 +51,8 @@ models = {
     "pfe": PfeModel,
     "laplace_online": LaplaceOnlineModel,
     "laplace_posthoc": LaplacePosthocModel,
+    "mc_dropout": MCDropoutModel,
+    "deep_ensemble": DeepEnsembleModel,
 }
 
 
@@ -128,7 +132,8 @@ def main(
         if config.model in ("laplace_posthoc"):
             loguru_logger.info(f"Start training!")
             model.fit(datamodule=data_module)
-
+        elif config.model in ("deep_ensemble"):
+            pass
         else:
             loguru_logger.info(f"Start testing!")
             # trainer.test(model, datamodule=data_module)

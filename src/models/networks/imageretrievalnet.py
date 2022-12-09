@@ -161,6 +161,9 @@ def init_network(params):
     # initialize whitening
 
     whiten = nn.Linear(dim, dim, bias=True)
+    dropout_rate = params.get("dropout_rate", 0.0)
+    if dropout_rate > 0:
+        whiten = nn.Sequential(nn.Dropout(dropout_rate), whiten)
     # TODO: whiten with possible dimensionality reduce
 
     # create meta information to be stored in the network

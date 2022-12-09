@@ -171,6 +171,7 @@ class Base(pl.LightningModule):
         )
 
     def test_step(self, batch, batch_idx, dataloader_idx=1):
+        
         return self.forward_step(
             batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
         )
