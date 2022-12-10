@@ -21,6 +21,7 @@ from lightning.laplace_online_model import LaplaceOnlineModel
 from lightning.pfe_model import PfeModel
 from lightning.mcdropout_model import MCDropoutModel
 from lightning.deep_ensemble_model import DeepEnsembleModel
+from lightning.hib_model import HibModel
 
 
 def parse_args():
@@ -53,6 +54,7 @@ models = {
     "laplace_posthoc": LaplacePosthocModel,
     "mc_dropout": MCDropoutModel,
     "deep_ensemble": DeepEnsembleModel,
+    "hib": HibModel,
 }
 
 

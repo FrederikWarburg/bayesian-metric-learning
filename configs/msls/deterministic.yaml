@@ -17,7 +17,7 @@ check_val_every_n_epoch : 1
 # training
 train : True
 epochs : 10
-lr : 3.0e-6
+lr : 1.0e-6
 loss : "contrastive"
 margin : 0.7
 distance : "euclidean"

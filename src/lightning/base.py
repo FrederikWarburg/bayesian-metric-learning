@@ -81,7 +81,7 @@ class Base(pl.LightningModule):
 
         x, y = self.format_batch(batch)
 
-        output = self.forward(x)
+        output = self.forward(x, self.train_n_samples)
 
         indices_tuple = self.get_indices_tuple(output["z_mu"], y)
 

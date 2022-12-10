@@ -30,7 +30,8 @@ def configure_model(args):
 
 def get_model_parameters(model, args):
 
-    if hasattr(model, "fc_log_var"):
+    # only pfe
+    if hasattr(model, "fc_log_var") and not hasattr(model, "kl_weight"):
         parameters = [{"params": model.fc_log_var.parameters()}]
         
     elif hasattr(model, "pool"):
