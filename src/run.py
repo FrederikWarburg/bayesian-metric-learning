@@ -67,6 +67,8 @@ def main(
         data_module = PlaceRecognitionDataModule(**config.toDict())
     elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw"):
         data_module = ImageRetrievalDataModule(**config.toDict())
+    else:
+        raise NotImplementedError(f"Dataset {config.dataset} not implemented")
     data_module.setup()
     config["dataset_size"] = data_module.train_dataset.__len__()
 
