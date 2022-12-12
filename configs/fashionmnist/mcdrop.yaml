@@ -2,11 +2,11 @@
 
 
 # model specific
-model : "pfe"
-resume : "../lightning_logs/fashionmnist/deterministic"
+model : "mc_dropout"
+resume : ""
 arch : "linear"
 latent_dim : 3
-
+dropout_rate : 0.05
 
 # logging
 check_val_every_n_epoch: 1

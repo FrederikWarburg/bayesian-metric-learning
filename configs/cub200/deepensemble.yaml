@@ -2,23 +2,22 @@
 
 
 # model specific
-model : "deterministic"
+model : "deep_ensemble"
 resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-pretrained : True
+resume : "../lightning_logs/cub200/deterministic"
 latent_dim : 512
-type_of_triplets : "semihard"
+seeds : [1,2,3,4,5]
 
 # logging
-log_dir : "../results"
-check_val_every_n_epoch : 1
+check_val_every_n_epoch: 1
 
 # training
-train : True
-epochs : 20
-lr : 3.0e-7
+train : False
+epochs : 0
+lr : 0.001
 loss : "contrastive"
 margin : 1
 distance : "euclidean"

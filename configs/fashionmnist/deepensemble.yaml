@@ -2,18 +2,18 @@
 
 
 # model specific
-model : "pfe"
+model : "deep_ensemble"
 resume : "../lightning_logs/fashionmnist/deterministic"
 arch : "linear"
 latent_dim : 3
-
+seeds : [1,2,3,4,5]
 
 # logging
 check_val_every_n_epoch: 1
 
 # training
-train : True
-epochs : 20
+train : False
+epochs : 0
 lr : 0.001
 loss : "contrastive"
 margin : 0.7
@@ -23,4 +23,4 @@ distance : "euclidean"
 data_dir : "/home/warburg/data/"
 dataset : "fashionmnist"
 batch_size : 256
-split_query_database : False
+split_quesry_database : False

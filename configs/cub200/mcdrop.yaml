@@ -2,11 +2,13 @@
 
 
 # model specific
-model : "pfe"
-resume : "../lightning_logs/fashionmnist/deterministic"
-arch : "linear"
-latent_dim : 3
-
+model : "mc_dropout"
+resume : ""
+arch : "resnet50"
+pool : "gem"
+whitening : True
+latent_dim : 512
+dropout_rate : 0.05
 
 # logging
 check_val_every_n_epoch: 1
@@ -14,13 +16,14 @@ check_val_every_n_epoch: 1
 # training
 train : True
 epochs : 20
-lr : 0.001
+lr : 3.0e-7
 loss : "contrastive"
-margin : 0.7
+margin : 1
 distance : "euclidean"
+type_of_triplets : "semihard"
 
 # data specific
 data_dir : "/home/warburg/data/"
-dataset : "fashionmnist"
-batch_size : 256
+dataset : "cub200"
+batch_size : 64
 split_query_database : False

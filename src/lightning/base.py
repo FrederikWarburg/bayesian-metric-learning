@@ -81,9 +81,8 @@ class Base(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         
         x, y = self.format_batch(batch)
+        output = self.forward(x, self.train_n_samples)
         
-        output = self.forward(x)
-
         indices_tuple = self.get_indices_tuple(output["z_mu"], y)
 
         loss = self.compute_loss(output, y, indices_tuple)
@@ -176,6 +175,7 @@ class Base(pl.LightningModule):
         )
 
     def test_step(self, batch, batch_idx, dataloader_idx=1):
+        
         return self.forward_step(
             batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
         )

@@ -7,9 +7,9 @@ def configure_model(args):
     ######
     # initialize model dict
     ######
-
+    dropout_rate = args.get("dropout_rate", 0.0)
     if args.dataset in ("mnist", "fashionmnist"):
-        model = MnistLinearNet(args.latent_dim)
+        model = MnistLinearNet(args.latent_dim, dropout_rate)
     else:
         if args.pretrained:
             print(">> Using pre-trained model '{}'".format(args.arch))
@@ -21,6 +21,7 @@ def configure_model(args):
         model_params["regional"] = args.regional
         model_params["whitening"] = args.whitening
         model_params["pretrained"] = args.pretrained
+        model_params["dropout_rate"] = dropout_rate
 
         model = init_network(model_params)
 
@@ -29,7 +30,8 @@ def configure_model(args):
 
 def get_model_parameters(model, args):
 
-    if hasattr(model, "fc_log_var"):
+    # only pfe
+    if hasattr(model, "fc_log_var") and not hasattr(model, "kl_weight"):
         parameters = [{"params": model.fc_log_var.parameters()}]
         
     elif hasattr(model, "pool"):

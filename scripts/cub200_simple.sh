@@ -13,13 +13,13 @@ CONFIG_PATHS=(#"deterministic" \
             "laplace_online_arccos_full" \
             "laplace_online_arccos_pos" \
             )
-
+CONFIG_PATHS=("mcdrop")
 
 for f in ${CONFIG_PATHS[@]}
 do
     for seed in {1..5}
     do
-        CUDA_VISIBLE_DEVICES=7 python run.py --config "../configs/cub200/$f.yaml" --seed $seed
+        CUDA_VISIBLE_DEVICES=6 python run.py --config "../configs/cub200/$f.yaml" --seed $seed
     done
 done
 
