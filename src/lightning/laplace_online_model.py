@@ -121,7 +121,7 @@ class LaplaceOnlineModel(Base):
             if hessian is None:
                 hessian = h_s
             else:
-                hessian += hessian
+                hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
         vector_to_parameters(mu_q, self.model.linear.parameters())
