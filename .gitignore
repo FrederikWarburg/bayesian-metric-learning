@@ -2,6 +2,15 @@
 __pycache__/
 
 # folder specific
-lightning_logs
-results
-notebooks
+lightning_logs/
+logs/
+bsub_logs/
+results/
+notebooks/
+data/
+metric_learning/
+.env
+
+# IDE
+.vscode/
+.idea/
