@@ -61,6 +61,7 @@ class Base(pl.LightningModule):
                 distance=self.distance,
             )
             self.posDistThr = args.posDistThr
+            self.negDistThr = args.negDistThr
         else:
             self.miner = TripletMarginMiner(
                 margin=args.margin,
@@ -206,7 +207,7 @@ class Base(pl.LightningModule):
                 z_muQ, z_muDb, utmQ, utmDb, idxQ, idxDb
             )
 
-            pidxs = get_pos_idx_place_recognition(utmQ, utmDb, self.posDistThr)
+            pidxs = get_pos_idx_place_recognition(utmQ, utmDb, self.negDistThr)
 
         if z_muDb is not None and len(z_muDb) == 0:
             return

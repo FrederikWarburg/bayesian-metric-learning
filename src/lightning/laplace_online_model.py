@@ -83,7 +83,7 @@ class LaplaceOnlineModel(Base):
 
         # init variables to store running sums
         loss = 0
-        hessian = None
+        hessian = 0
 
         # draw samples from the nn (sample nn)
         samples = self.laplace.sample(mu_q, sigma_q, self.train_n_samples)
@@ -117,11 +117,7 @@ class LaplaceOnlineModel(Base):
                     x.detach(), self.model.linear, hessian_indices_tuple
                 )
                 h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
-
-                if hessian is None:
-                    hessian = h_s
-                else:
-                    hessian += h_s
+                hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
         vector_to_parameters(mu_q, self.model.linear.parameters())

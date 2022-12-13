@@ -16,12 +16,12 @@ check_val_every_n_epoch : 1
 
 # training
 train : True
-epochs : 10
+epochs : 30
 lr : 1.0e-7
 loss : "contrastive"
-margin : 0.7
+margin : 0.1
 distance : "euclidean"
-type_of_triplets : "hard" # easy, semihard, hard, all
+type_of_triplets : "all" # easy, semihard, hard, all
 
 # data specific
 data_dir : "/home/warburg/data/"
