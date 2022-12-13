@@ -3,13 +3,16 @@
 
 # model specific
 model : "laplace_posthoc"
-resume : "../lightning_logs/lfw/deterministic"
 arch : "resnet50"
 pool : "gem"
 whitening : True
-pretrained : True
+resume : "../lightning_logs/lfw/deterministic"
 latent_dim : 512
-type_of_triplets : "semihard"
+
+# hessian
+loss_approx : "pos"
+max_pairs : 30
+type_of_triplets : "semihard" # easy, semihard, hard, all
 
 # logging
 check_val_every_n_epoch: 1
@@ -19,7 +22,7 @@ train : True
 epochs : 200
 lr : 3.0e-7
 loss : "contrastive"
-margin : 0.7
+margin : 1
 distance : "euclidean"
 
 # data specific
@@ -27,3 +30,4 @@ data_dir : "/work3/s174433/datasets/"
 dataset : "lfw"
 batch_size : 64
 split_query_database : False
+

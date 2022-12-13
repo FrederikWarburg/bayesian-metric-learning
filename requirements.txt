@@ -15,7 +15,7 @@ python-dotenv
 torch --extra-index-url https://download.pytorch.org/whl/cpu
 torchvision --extra-index-url https://download.pytorch.org/whl/cpu
 pytorch-lightning
-torchmetrics
+torchmetrics==0.5.1  # https://github.com/Lightning-AI/lightning/issues/4237 removed 
 
 pytorch-metric-learning
 faiss-cpu

@@ -83,8 +83,8 @@ class UncertaintyModule(nn.Module):
 
 
 def rename_keys(statedict):
-
     new_dict = {k.replace("model.", ""): statedict[k] for k in statedict.keys()}
+    new_dict = {k.replace("features", "backbone"): new_dict[k] for k in new_dict.keys()}
     return new_dict
 
 

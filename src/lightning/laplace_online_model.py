@@ -18,12 +18,8 @@ from miners.triplet_miners import TripletMarginMiner
 
 
 hessian_calculators = {
-    "contrastive_pos": ContrastiveHessianCalculator,
-    "contrastive_fix": ContrastiveHessianCalculator,
-    "contrastive_full": ContrastiveHessianCalculator,
-    "arccos_pos": ArccosHessianCalculator,
-    # "arccos_fix": ArccosHessianCalculator,
-    "arccos_full": ArccosHessianCalculator,
+    "contrastive": ContrastiveHessianCalculator,
+    "arccos": ArccosHessianCalculator,
 }
 
 
@@ -36,9 +32,8 @@ class LaplaceOnlineModel(Base):
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
 
-        loss_func = f"{args.loss}_{args.loss_approx}"
-        self.hessian_calculator = hessian_calculators[loss_func](
-            wrt="weight", loss_func=loss_func, shape="diagonal", speed="half"
+        self.hessian_calculator = hessian_calculators[args.loss](
+            wrt="weight", shape="diagonal", speed="half", method=args.loss_approx
         )
 
         self.laplace = DiagLaplace()
