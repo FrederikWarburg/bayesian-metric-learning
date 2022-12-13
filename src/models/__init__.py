@@ -29,9 +29,9 @@ def configure_model(args):
 
 
 def get_model_parameters(model, args):
-
+    
     # only pfe
-    if hasattr(model, "fc_log_var") and not hasattr(model, "kl_weight"):
+    if args.model == "pfe":
         parameters = [{"params": model.fc_log_var.parameters()}]
         
     elif hasattr(model, "pool"):
@@ -51,9 +51,18 @@ def get_model_parameters(model, args):
                 "weight_decay": 0,
             }
         )
+        
+        if args.model == "hib":
+            parameters.append({"params": model.alpha})
+            parameters.append({"params": model.beta})
 
-        parameters.append({"params": model.linear.parameters()})
+            parameters.append({"params": model.fc_mu.parameters()})
+            parameters.append({"params": model.fc_log_var.parameters()})
+        else:
+            parameters.append({"params": model.linear.parameters()})
+
     else:
+
         parameters = [{"params": model.parameters()}]
 
     return parameters

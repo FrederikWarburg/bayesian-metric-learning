@@ -12,8 +12,11 @@ CONFIG_PATHS=(#"deterministic" \
             #"laplace_posthoc_arccos_pos" \
             "laplace_online_arccos_full" \
             "laplace_online_arccos_pos" \
+            "mcdrop" \
+            "hib" \
             )
-CONFIG_PATHS=("mcdrop")
+
+CONFIG_PATHS=("hib")
 
 for f in ${CONFIG_PATHS[@]}
 do
