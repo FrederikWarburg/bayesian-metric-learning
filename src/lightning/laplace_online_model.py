@@ -38,7 +38,10 @@ class LaplaceOnlineModel(Base):
 
         loss_func = f"{args.loss}_{args.loss_approx}"
         self.hessian_calculator = hessian_calculators[loss_func](
-            wrt="weight", loss_func=loss_func, shape="diagonal", speed="half"
+            wrt="weight", 
+            shape="diagonal", 
+            speed="half", 
+            method=args.loss_approx,
         )
 
         self.laplace = DiagLaplace()
@@ -71,9 +74,9 @@ class LaplaceOnlineModel(Base):
 
     def training_step(self, batch, batch_idx):
 
-        x, y = self.format_batch(batch)
+        im, y = self.format_batch(batch)
 
-        x = self.model.backbone(x)
+        x = self.model.backbone(im)
         if hasattr(self.model, "pool"):
             x = self.model.pool(x)
 
@@ -129,7 +132,7 @@ class LaplaceOnlineModel(Base):
         # add images to tensorboard every epoch
         if self.current_epoch == self.counter:
             if self.current_epoch < 5:
-                self.log_triplets(x, indices_tuple)
+                self.log_triplets(im, indices_tuple)
             self.counter += 1
 
         # log hessian and sigma_q

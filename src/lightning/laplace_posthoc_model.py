@@ -57,7 +57,10 @@ class LaplacePosthocModel(Base):
 
         loss_func = f"{args.loss}_{args.loss_approx}"
         self.hessian_calculator = hessian_calculators[loss_func](
-            wrt="weight", loss_func=loss_func, shape="diagonal", speed="half"
+            wrt="weight", 
+            shape="diagonal", 
+            speed="half",
+            method=args.loss_approx,
         )
 
         # if arccos, then remove normalization layer from model

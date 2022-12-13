@@ -81,8 +81,8 @@ class Base(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         
-        x, y = self.format_batch(batch)
-        output = self.forward(x, self.train_n_samples)
+        im, y = self.format_batch(batch)
+        output = self.forward(im, self.train_n_samples)
         
         indices_tuple = self.get_indices_tuple(output["z_mu"], y)
 
@@ -91,7 +91,7 @@ class Base(pl.LightningModule):
         # add images to tensorboard every epoch
         if self.current_epoch == self.counter:
             if self.current_epoch < 5:
-                self.log_triplets(x, indices_tuple)
+                self.log_triplets(im, indices_tuple)
             self.counter += 1
 
         return loss
