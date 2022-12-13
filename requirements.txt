@@ -1,0 +1,23 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+seaborn
+
+wandb
+dotmap
+loguru
+pyyaml
+black
+isort
+python-dotenv
+
+torch --extra-index-url https://download.pytorch.org/whl/cpu
+torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+pytorch-lightning
+torchmetrics
+
+pytorch-metric-learning
+faiss-cpu
+
+git+https://github.com/IlMioFrizzantinoAmabile/stochman.git#egg=stochman

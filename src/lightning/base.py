@@ -48,6 +48,7 @@ class Base(pl.LightningModule):
         self.criterion = configure_metric_loss(args.loss, args.distance, args.margin)
 
         self.place_rec = args.dataset in ("dag", "msls")
+        self.face_rec = args.dataset in ("lfw")
         self.savepath = os.path.join(savepath, "results")
 
         if self.place_rec:
@@ -78,11 +79,10 @@ class Base(pl.LightningModule):
         self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
-
+        
         x, y = self.format_batch(batch)
-
         output = self.forward(x, self.train_n_samples)
-
+        
         indices_tuple = self.get_indices_tuple(output["z_mu"], y)
 
         loss = self.compute_loss(output, y, indices_tuple)
@@ -100,11 +100,15 @@ class Base(pl.LightningModule):
 
     def format_batch(self, batch):
         x, y = batch
-        if self.place_rec:
+        if self.place_rec or self.face_rec:
             n = len(x)
             b, c, h, w = x[0].shape
             x = torch.stack(x).view(b * n, c, h, w)
-            y = torch.stack(y).view(b * n, 2)
+
+            if self.place_rec:
+                y = torch.stack(y).view(b * n, 2)
+            else:
+                y = torch.stack(y).view(b * n)
 
         return x, y
 
