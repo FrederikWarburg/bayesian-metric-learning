@@ -6,6 +6,7 @@ import torch.nn as nn
 import os
 import sys
 
+from models.layers.normalization import GlobalBatchNorm1d
 
 class UncertaintyModule(nn.Module):
     def __init__(self, model):
@@ -28,7 +29,7 @@ class UncertaintyModule(nn.Module):
             nn.BatchNorm1d(latent_size),
             nn.ReLU(),
             nn.Linear(latent_size, latent_size),
-            nn.BatchNorm1d(latent_size),
+            GlobalBatchNorm1d(latent_size),
         )
 
     def forward(self, x, n_samples=1):

@@ -56,12 +56,12 @@ class Base(pl.LightningModule):
                 margin=args.margin,
                 collect_stats=True,
                 type_of_triplets=args.type_of_triplets,
-                posDistThr=self.args.posDistThr,
-                negDistThr=self.args.negDistThr,
+                posDistThr=args.get("posDistThr", 10),
+                negDistThr=args.get("negDistThr", 25),
                 distance=self.distance,
             )
-            self.posDistThr = args.posDistThr
-            self.negDistThr = args.negDistThr
+            self.posDistThr = args.get("posDistThr", 10)
+            self.negDistThr = args.get("negDistThr", 25)
         else:
             self.miner = TripletMarginMiner(
                 margin=args.margin,
@@ -289,6 +289,7 @@ class Base(pl.LightningModule):
                 self.log(f"test_metric/{key}", metrics[key])
 
         # dump to json
+        os.makedirs(self.savepath, exist_ok=True)
         with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
             json.dump(metrics, file)
 

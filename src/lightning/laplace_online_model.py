@@ -59,9 +59,9 @@ class LaplaceOnlineModel(Base):
             self.hessian_miner = TripletMarginMinerPR(
                 margin=args.margin,
                 collect_stats=True,
-                type_of_triplets=args.type_of_triplets_hessian,
-                posDistThr=self.args.posDistThr,
-                negDistThr=self.args.negDistThr,
+                type_of_triplets=args.get("type_of_triplets_hessian", "all"),
+                posDistThr=args.get("posDistThr", 10),
+                negDistThr=args.get("negDistThr", 25),
                 distance=self.distance,
             )
         else:
@@ -69,7 +69,7 @@ class LaplaceOnlineModel(Base):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets=args.type_of_triplets_hessian,  # [easy, hard, semihard, all]
+                type_of_triplets=args.get("type_of_triplets_hessian", "all"),  # [easy, hard, semihard, all]
             )
 
     def training_step(self, batch, batch_idx):
