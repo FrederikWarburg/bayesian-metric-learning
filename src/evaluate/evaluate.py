@@ -22,15 +22,21 @@ def evaluate_uncertainties(dict_in, dict_ood, vis_path, prefix):
 
     os.makedirs(vis_path, exist_ok=True)
 
-    # ood evaluation (auroc, auprc)
-    auroc, auprc = evaluate_ood(dict_in, dict_ood, vis_path, prefix)
+    metrics = {}
+    if dict_ood is not None:
+        # ood evaluation (auroc, auprc)
+        auroc, auprc = evaluate_ood(dict_in, dict_ood, vis_path, prefix)
+        metrics["auroc"] = auroc
+        metrics["auprc"] = auprc
 
     # evaluate ece
     ece = evaluate_ece(dict_in, vis_path, prefix)
     # evaluate_ece(dict_ood, vis_path, prefix)
+    metrics["ece"] = ece
 
     # evaluate ausc
     ausc = evaluate_ausc(dict_in, vis_path, prefix)
     # evaluate_ausc(dict_ood, vis_path, prefix)
+    metrics["ausc"] = ausc
 
-    return {"auroc": auroc, "auprc": auprc, "ece": ece, "ausc": ausc}
+    return metrics

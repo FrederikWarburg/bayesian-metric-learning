@@ -149,6 +149,7 @@ def plot_calibration_curve(acc, confidences, path, prefix, bins=10):
 
     # Save dir
     fig.savefig(os.path.join(path, f"{prefix}_calibration_curve.png"))
+    plt.close(fig)
 
 
 def save_data(acc, confidences, targets, bin_sizes, path, prefix):

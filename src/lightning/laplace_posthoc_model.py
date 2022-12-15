@@ -16,18 +16,14 @@ import torch
 
 
 hessian_calculators = {
-    "contrastive_pos": ContrastiveHessianCalculator,
-    "contrastive_fix": ContrastiveHessianCalculator,
-    "contrastive_full": ContrastiveHessianCalculator,
-    "arccos_pos": ArccosHessianCalculator,
-    # "arccos_fix": ArccosHessianCalculator,
-    "arccos_full": ArccosHessianCalculator,
+    "contrastive": ContrastiveHessianCalculator,
+    "arccos": ArccosHessianCalculator,
 }
 
 
 def rename_keys(statedict):
-
     new_dict = {k.replace("model.", ""): statedict[k] for k in statedict.keys()}
+    new_dict = {k.replace("features", "backbone"): new_dict[k] for k in new_dict.keys()}
     return new_dict
 
 
@@ -48,12 +44,11 @@ class LaplacePosthocModel(Base):
         # load model parameters
         self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
 
-        loss_func = f"{args.loss}_{args.loss_approx}"
-        self.hessian_calculator = hessian_calculators[loss_func](
-           wrt="weight", 
-           shape="diagonal", 
-           speed="half",
-           method=args.loss_approx,
+        self.hessian_calculator = hessian_calculators[args.loss](
+            wrt="weight",
+            shape="diagonal",
+            speed="half",
+            method=args.loss_approx,
         )
 
         # if arccos, then remove normalization layer from model

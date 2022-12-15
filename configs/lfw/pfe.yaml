@@ -3,24 +3,24 @@
 
 # model specific
 model : "pfe"
-resume : "../lightning_logs/mnist/deterministic"
+resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-pretrained : True
+resume : "../lightning_logs/lfw/deterministic"
 latent_dim : 512
-type_of_triplets : "semihard"
 
 # logging
 check_val_every_n_epoch: 1
 
 # training
 train : True
-epochs : 200
+epochs : 10
 lr : 3.0e-7
 loss : "contrastive"
-margin : 0.7
+margin : 1
 distance : "euclidean"
+type_of_triplets : "semihard"
 
 # data specific
 data_dir : "/work3/s174433/datasets/"
