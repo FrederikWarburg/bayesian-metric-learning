@@ -6,6 +6,8 @@ import torch.nn as nn
 import os
 import sys
 
+from models.layers.normalization import GlobalBatchNorm1d
+
 
 class UncertaintyModule(nn.Module):
     def __init__(self, model):
@@ -43,15 +45,8 @@ class UncertaintyModule(nn.Module):
             nn.BatchNorm1d(latent_size),
             nn.ReLU(),
             nn.Linear(latent_size, latent_size),
-            nn.BatchNorm1d(latent_size),
+            GlobalBatchNorm1d(latent_size),
         )
-
-        # Scale and shift parameters from paper
-        self.beta = nn.Parameter(torch.zeros(latent_size) - 7, requires_grad=True)
-        self.gamma = nn.Parameter(torch.ones(latent_size) * 1e-4, requires_grad=True)
-
-    def scale_and_shift(self, x):
-        return self.gamma * x + self.beta
 
     def forward(self, x, n_samples=1):
 
@@ -68,8 +63,6 @@ class UncertaintyModule(nn.Module):
 
         # Get log var
         log_var = self.fc_log_var(features)
-
-        log_var = self.scale_and_shift(log_var)
 
         sigma = (log_var * 0.5).exp()
 

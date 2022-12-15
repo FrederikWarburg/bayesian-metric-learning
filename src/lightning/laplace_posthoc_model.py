@@ -40,10 +40,10 @@ class LaplacePosthocModel(Base):
         # load model checkpoint
         resume = os.path.join(args.resume, str(seed), "checkpoints/best.ckpt")
         if not os.path.isfile(resume):
-            print(f"path {resume} not found.")
-            print("laplace posthoc requires a pretrained model")
-            print("fix path and try again.")
-            sys.exit()
+           print(f"path {resume} not found.")
+           print("laplace posthoc requires a pretrained model")
+           print("fix path and try again.")
+           sys.exit()
 
         # transfer part of model to stochman
         self.model.linear = convert_to_stochman(self.model.linear)
@@ -52,12 +52,15 @@ class LaplacePosthocModel(Base):
         self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
 
         self.hessian_calculator = hessian_calculators[args.loss](
-            wrt="weight", shape="diagonal", speed="half", method=args.loss_approx
+            wrt="weight",
+            shape="diagonal",
+            speed="half",
+            method=args.loss_approx,
         )
 
         # if arccos, then remove normalization layer from model
         if self.args.loss == "arccos":
-            self.model.linear = remove_normalization_layer(self.model.linear)
+           self.model.linear = remove_normalization_layer(self.model.linear)
 
         self.laplace = DiagLaplace()
         self.t = args.t
@@ -67,6 +70,7 @@ class LaplacePosthocModel(Base):
         self.register_buffer("hessian", hessian)
 
     def forward(self, x, n_samples=1):
+
 
         x = self.model.backbone(x)
         if hasattr(self.model, "pool"):
@@ -101,7 +105,7 @@ class LaplacePosthocModel(Base):
         # compute statistics
         z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
-
+        
         # put mean parameters back
         vector_to_parameters(mu_q, self.model.linear.parameters())
 

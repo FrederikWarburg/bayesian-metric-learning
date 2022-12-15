@@ -33,7 +33,10 @@ class LaplaceOnlineModel(Base):
         self.model.linear = convert_to_stochman(self.model.linear)
 
         self.hessian_calculator = hessian_calculators[args.loss](
-            wrt="weight", shape="diagonal", speed="half", method=args.loss_approx
+            wrt="weight", 
+            shape="diagonal", 
+            speed="half", 
+            method=args.loss_approx,
         )
 
         self.laplace = DiagLaplace()
@@ -51,9 +54,9 @@ class LaplaceOnlineModel(Base):
             self.hessian_miner = TripletMarginMinerPR(
                 margin=args.margin,
                 collect_stats=True,
-                type_of_triplets=args.type_of_triplets_hessian,
-                posDistThr=self.args.posDistThr,
-                negDistThr=self.args.negDistThr,
+                type_of_triplets=args.get("type_of_triplets_hessian", "all"),
+                posDistThr=args.get("posDistThr", 10),
+                negDistThr=args.get("negDistThr", 25),
                 distance=self.distance,
             )
         else:
@@ -61,14 +64,14 @@ class LaplaceOnlineModel(Base):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets=args.type_of_triplets_hessian,  # [easy, hard, semihard, all]
+                type_of_triplets=args.get("type_of_triplets_hessian", "all"),  # [easy, hard, semihard, all]
             )
 
     def training_step(self, batch, batch_idx):
 
-        x, y = self.format_batch(batch)
+        im, y = self.format_batch(batch)
 
-        x = self.model.backbone(x)
+        x = self.model.backbone(im)
         if hasattr(self.model, "pool"):
             x = self.model.pool(x)
 
@@ -78,7 +81,7 @@ class LaplaceOnlineModel(Base):
 
         # init variables to store running sums
         loss = 0
-        hessian = None
+        hessian = 0
 
         # draw samples from the nn (sample nn)
         samples = self.laplace.sample(mu_q, sigma_q, self.train_n_samples)
@@ -112,11 +115,7 @@ class LaplaceOnlineModel(Base):
                     x.detach(), self.model.linear, hessian_indices_tuple
                 )
                 h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
-
-                if hessian is None:
-                    hessian = h_s
-                else:
-                    hessian += h_s
+                hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
         vector_to_parameters(mu_q, self.model.linear.parameters())
@@ -128,7 +127,7 @@ class LaplaceOnlineModel(Base):
         # add images to tensorboard every epoch
         if self.current_epoch == self.counter:
             if self.current_epoch < 5:
-                self.log_triplets(x, indices_tuple)
+                self.log_triplets(im, indices_tuple)
             self.counter += 1
 
         # log hessian and sigma_q

@@ -6,10 +6,14 @@ import torch.nn as nn
 import os
 import sys
 
+from models.layers.normalization import GlobalBatchNorm1d
 
 class UncertaintyModule(nn.Module):
     def __init__(self, model):
         super().__init__()
+
+        self.alpha = torch.nn.Parameter(torch.ones(1), requires_grad=True)
+        self.beta = torch.nn.Parameter(torch.zeros(1), requires_grad=True)
 
         self.backbone = model.backbone
         if hasattr(model, "pool"):
@@ -25,7 +29,7 @@ class UncertaintyModule(nn.Module):
             nn.BatchNorm1d(latent_size),
             nn.ReLU(),
             nn.Linear(latent_size, latent_size),
-            nn.BatchNorm1d(latent_size),
+            GlobalBatchNorm1d(latent_size),
         )
 
     def forward(self, x, n_samples=1):
@@ -68,8 +72,6 @@ class HibModel(Base):
         # encapsolate model in an uncertainty module
         # and freeze deterministic part of model
         self.model = UncertaintyModule(self.model)
-        self.alpha = torch.nn.Parameter(torch.ones(1), requires_grad=True)
-        self.beta = torch.nn.Parameter(torch.zeros(1), requires_grad=True)
         self.train_n_samples = 8
         
         self.kl_weight = args.get("kl_weight", 1e-6)
@@ -85,11 +87,11 @@ class HibModel(Base):
 
     def compute_loss(self, output, y, indices_tuple):
 
-        loss = self.criterion(output["z_samples"], self.alpha, self.beta, indices_tuple)
+        loss = self.criterion(output["z_samples"], self.model.alpha, self.model.beta, indices_tuple)
 
         # kl divergence
         # kl = log(sigma^2) + (1 + mu^2) / sigma^2
-        kl_div = -0.5 * torch.sum(torch.log(output["z_sigma"]) + (1 + output["z_mu"] ** 2) / output["z_sigma"]**2)
+        kl_div = -0.5 * torch.sum(torch.log(output["z_sigma"] + 1e-6) + (1 + output["z_mu"] ** 2) / (output["z_sigma"]**2 + 1e-6))
         loss = loss + self.kl_weight * kl_div
 
         self.log(
