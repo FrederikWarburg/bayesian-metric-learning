@@ -27,6 +27,9 @@ class MCDropoutModel(Base):
         z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
 
+        # ensure that we are on unit sphere
+        z_mu = z_mu / z_mu.norm(dim=-1, keepdim=True)
+
         return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples" : zs.permute(1, 0, 2)}
 
     def compute_loss(self, output, y, indices_tuple):

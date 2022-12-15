@@ -12,6 +12,9 @@ from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
 
+import torch
+
+
 hessian_calculators = {
     "contrastive_pos": ContrastiveHessianCalculator,
     "contrastive_fix": ContrastiveHessianCalculator,
@@ -28,13 +31,6 @@ def rename_keys(statedict):
     return new_dict
 
 
-def remove_normalization_layer(model):
-
-    if isinstance(model[-1], nnj.L2Norm):
-        return nnj.Sequential(*model[:-1], add_hooks=True)
-    return model
-
-
 class LaplacePosthocModel(Base):
     def __init__(self, args, savepath, seed):
         super().__init__(args, savepath, seed)
@@ -49,9 +45,6 @@ class LaplacePosthocModel(Base):
            print("fix path and try again.")
            sys.exit()
 
-        # transfer part of model to stochman
-        self.model.linear = convert_to_stochman(self.model.linear)
-
         # load model parameters
         self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
 
@@ -65,7 +58,9 @@ class LaplacePosthocModel(Base):
 
         # if arccos, then remove normalization layer from model
         if self.args.loss == "arccos":
-           self.model.linear = remove_normalization_layer(self.model.linear)
+            self.model.linear = convert_to_stochman(self.model.linear[:-1])
+        else:
+            self.model.linear = convert_to_stochman(self.model.linear)
 
         self.laplace = DiagLaplace()
 
@@ -74,7 +69,6 @@ class LaplacePosthocModel(Base):
         self.register_buffer("hessian", hessian)
 
     def forward(self, x, n_samples=1):
-
 
         x = self.model.backbone(x)
         if hasattr(self.model, "pool"):
@@ -102,6 +96,9 @@ class LaplacePosthocModel(Base):
 
             z = self.model.linear(x)
 
+            # ensure that we are on unit sphere
+            z = z / z.norm(dim=-1, keepdim=True)
+
             zs.append(z)
 
         zs = torch.stack(zs)
@@ -122,35 +119,38 @@ class LaplacePosthocModel(Base):
         self.model.eval()
 
         for batch in tqdm(train_loader):
+        
+            x, y = self.format_batch(batch)
+
+            x = x.cuda()
+            y = y.cuda()
+
             with torch.inference_mode():
-
-                x, y = self.format_batch(batch)
-
-                x = x.cuda()
-                y = y.cuda()
-
                 x = self.model.backbone(x)
                 if hasattr(self.model, "pool"):
                     x = self.model.pool(x)
 
-                z_mu = self.model.linear(x)
+                z = self.model.linear(x)
 
-                indices_tuple = self.get_indices_tuple(z_mu, y)
+                # ensure that we are on unit sphere
+                z = z / z.norm(dim=-1, keepdim=True)
 
-                # randomly choose 5000 pairs if more than 5000 pairs available.
-                if len(indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(indices_tuple[0].size(0))[: self.max_pairs]
-                    indices_tuple = (
-                        indices_tuple[0][idx],
-                        indices_tuple[1][idx],
-                        indices_tuple[2][idx],
-                    )
+            indices_tuple = self.get_indices_tuple(z, y)
 
-                h = self.hessian_calculator.compute_hessian(
-                    x, self.model.linear, indices_tuple
+            # randomly choose 5000 pairs if more than 5000 pairs available.
+            if len(indices_tuple[0]) > self.max_pairs:
+                idx = torch.randperm(indices_tuple[0].size(0))[: self.max_pairs]
+                indices_tuple = (
+                    indices_tuple[0][idx],
+                    indices_tuple[1][idx],
+                    indices_tuple[2][idx],
                 )
+            
+            h = self.hessian_calculator.compute_hessian(
+                x, self.model.linear, indices_tuple
+            )
 
-                self.hessian += h
+            self.hessian += h
 
         savepath = f"{self.savepath.replace('/results', '')}/checkpoints"
         os.makedirs(savepath, exist_ok=True)

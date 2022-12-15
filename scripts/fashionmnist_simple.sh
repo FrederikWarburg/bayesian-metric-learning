@@ -16,7 +16,7 @@ CONFIG_PATHS=(#"deterministic" \
             #"hib" \
             )
 
-#CONFIG_PATHS=("hib")
+CONFIG_PATHS=("pfe")
 
 for f in ${CONFIG_PATHS[@]}
 do

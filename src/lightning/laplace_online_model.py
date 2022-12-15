@@ -33,8 +33,11 @@ class LaplaceOnlineModel(Base):
 
         self.max_pairs = args.max_pairs
 
-        # transfer part of model to stochman
-        self.model.linear = convert_to_stochman(self.model.linear)
+        # if arccos, then remove normalization layer from model
+        if self.args.loss == "arccos":
+            self.model.linear = convert_to_stochman(self.model.linear[:-1])
+        else:
+            self.model.linear = convert_to_stochman(self.model.linear)
 
         loss_func = f"{args.loss}_{args.loss_approx}"
         self.hessian_calculator = hessian_calculators[loss_func](
@@ -96,6 +99,9 @@ class LaplaceOnlineModel(Base):
             vector_to_parameters(net_sample, self.model.linear.parameters())
 
             z = self.model.linear(x)
+
+            # ensure that we are on unit sphere
+            z = z / z.norm(dim=-1, keepdim=True)
 
             indices_tuple = self.get_indices_tuple(z, y)
 
@@ -164,6 +170,9 @@ class LaplaceOnlineModel(Base):
 
             z = self.model.linear(x)
 
+            # ensure that we are on unit sphere
+            z = z / z.norm(dim=-1, keepdim=True)
+
             zs.append(z)
 
         zs = torch.stack(zs)
@@ -182,9 +191,6 @@ class LaplaceOnlineModel(Base):
         # this a hack: pytorch-metric-learning does not use the labels if indices_tuple is provided,
         # however, the shape of the labels are required to be 1D.
         place_holder = torch.zeros(y.size(0), device=y.device)
-
-        if self.args.loss == "arccos":
-            z = z / torch.norm(z, dim=-1, keepdim=True)
 
         loss = self.criterion(z, place_holder, indices_tuple)
 
