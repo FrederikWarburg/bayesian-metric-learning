@@ -15,5 +15,5 @@ export CUDA_VISIBLE_DEVICES=0
 for seed in {1..5}
 do
     python run.py --config "../configs/lfw/laplace_online_arccos_pos.yaml" --seed $seed
-    rm -rf ../lightning_logs/lfw/laplace_online/$seed
+    rm -rf ../lightning_logs/lfw/laplace_online/$seed/arccos/pos/checkpoints
 done

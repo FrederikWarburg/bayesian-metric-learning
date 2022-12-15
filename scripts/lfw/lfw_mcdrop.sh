@@ -15,5 +15,5 @@ export CUDA_VISIBLE_DEVICES=0
 for seed in {1..5}
 do
     python run.py --config "../configs/lfw/mcdrop.yaml" --seed $seed
-    rm -rf ../lightning_logs/lfw/mc_dropout/$seed
+    rm -rf ../lightning_logs/lfw/mc_dropout/$seed/checkpoints
 done
