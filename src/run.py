@@ -35,8 +35,6 @@ def parse_args():
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
     parser.add_argument("--validate-only", action='store_true', help="only validate")
-    parser.add_argument("--test-n-samples", default=100, type=int, help="number of testing samples")
-    parser.add_argument("--t", default=1, type=float, help="t")
     args = parser.parse_args()
     config_path = args.config
 
@@ -44,8 +42,6 @@ def parse_args():
         config = yaml.full_load(file)
 
     config = DotMap(config)
-    config["test_n_samples"] = args.test_n_samples
-    config["t"] = args.t
     print(config)
 
     return config, args

@@ -63,7 +63,6 @@ class LaplacePosthocModel(Base):
            self.model.linear = remove_normalization_layer(self.model.linear)
 
         self.laplace = DiagLaplace()
-        self.t = args.t
 
         # register hessian. It will be overwritten when fitting model
         hessian = torch.zeros_like(parameters_to_vector(self.model.linear.parameters()), device="cuda:0")
@@ -87,7 +86,7 @@ class LaplacePosthocModel(Base):
         sigma_q = self.laplace.posterior_scale(self.hessian)
 
         # draw samples
-        samples = self.laplace.sample(mu_q, 10000000 * torch.ones_like(sigma_q), n_samples)
+        samples = self.laplace.sample(mu_q, sigma_q, n_samples)
 
         # forward n times
         zs = []
