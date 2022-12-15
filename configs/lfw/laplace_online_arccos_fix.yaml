@@ -2,30 +2,35 @@
 
 
 # model specific
-model : "deterministic"
-resume : ""
+model : "laplace_online"
 arch : "resnet50"
 pool : "gem"
 whitening : True
 pretrained : True
 latent_dim : 512
-type_of_triplets : "semihard"
+
+# hessian
+hessian_memory_factor : 0.995
+loss_approx : "fix"
+max_pairs : 30
+type_of_triplets : "semihard" # easy, semihard, hard, all
+type_of_triplets_hessian : "semihard" # easy, semihard, hard, all
 
 # logging
-log_dir : "../results"
-check_val_every_n_epoch : 1
+check_val_every_n_epoch: 1
 
 # training
 train : True
 epochs : 200
 lr : 3.0e-7
-loss : "contrastive"
+loss : "arccos"
 margin : 1
 distance : "euclidean"
-type_of_triplets : "semihard"
+# train_n_samples : 10
 
 # data specific
 data_dir : "/work3/s174433/datasets/"
 dataset : "lfw"
 batch_size : 64
 split_query_database : False
+
