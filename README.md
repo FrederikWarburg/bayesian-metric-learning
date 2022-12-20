@@ -3,8 +3,10 @@
 # Setup
 
 ```bash
-module load python3/3.9.6 cuda/11.4.2  # If on an HPC machine
-python3 -m pip install -r requirements.txt
+module load module load python3/3.9.11 cuda/11.4  # If on an HPC machine
+python3 -m venv metric_learning/
+source metric_learning/bin/activate
+python -m pip install -r requirements.txt
 cp -n .env.example .env
 ```
 
@@ -13,7 +15,7 @@ cp -n .env.example .env
 ```bash
 # HPC, GPU
 export CUDA_VISIBLE_DEVICES=0  # If on an Nvidia GPU machine
-module load python3/3.9.6 cuda/11.4.2  # If on an HPC machine
+module load module load python3/3.9.11 cuda/11.4  # If on an HPC machine
 source metric_learning/bin/activate
 python src/run.py --config configs/fashionmnist/deterministic.yaml
 ```
