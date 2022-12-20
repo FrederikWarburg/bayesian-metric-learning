@@ -9,10 +9,9 @@ pool : "gem"
 whitening : True
 pretrained : True
 latent_dim : 512
-type_of_triplets : "semihard"
 
 # logging
-log_dir : "../results"
+log_dir : "results"
 check_val_every_n_epoch : 1
 
 # training
@@ -25,7 +24,7 @@ distance : "euclidean"
 type_of_triplets : "semihard"
 
 # data specific
-data_dir : "/work3/s174433/datasets/"
+data_dir : null
 dataset : "lfw"
 batch_size : 64
 split_query_database : False

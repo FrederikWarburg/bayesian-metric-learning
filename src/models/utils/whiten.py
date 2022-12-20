@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 
 
@@ -60,7 +61,7 @@ def cholesky(S):
         try:
             L = np.linalg.cholesky(S + alpha * np.eye(*S.shape))
             return L
-        except:
+        except np.linalg.LinAlgError:
             if alpha == 0:
                 alpha = 1e-10
             else:

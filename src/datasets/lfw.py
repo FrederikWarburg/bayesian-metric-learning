@@ -1,22 +1,25 @@
 from typing import Tuple
 
+import numpy as np
 import torch.utils.data as data
 import torchvision
+from PIL import Image
 from torch import Tensor
 from torchvision import transforms
-import numpy as np
-from PIL import Image
+
 
 class TrainDataset(data.Dataset):
     def __init__(self, root):
-        self.transform = transforms.Compose([
-            transforms.RandomResizedCrop(227, scale=(0.08, 1)),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),
-        ])
+        self.transform = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(227, scale=(0.08, 1)),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
         data = torchvision.datasets.LFWPeople(root, split="train", download=True)
 
         self.targets = np.array(data.targets)
@@ -44,7 +47,7 @@ class TrainDataset(data.Dataset):
         return len(self.qidx)
 
     def __getitem__(self, idx) -> Tuple[Tensor, int]:
-        
+
         qidx = self.qidx[idx]
         pidxs = self.pidxs[idx]
 
@@ -58,7 +61,7 @@ class TrainDataset(data.Dataset):
 
         assert self.targets[qidx] == self.targets[pidx]
         target = [self.targets[qidx], self.targets[pidx]]
-        
+
         return output, target
 
     # def __getitem__(self, idx) -> Tuple[Tensor, Tensor, int]:
@@ -68,14 +71,16 @@ class TrainDataset(data.Dataset):
 
 class TestDataset(data.Dataset):
     def __init__(self, root):
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(227),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-             ),
-        ])
+        transform = transforms.Compose(
+            [
+                transforms.Resize(256),
+                transforms.CenterCrop(227),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
 
         self.data = torchvision.datasets.LFWPeople(
             root, split="test", download=True, transform=transform

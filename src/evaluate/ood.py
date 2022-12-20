@@ -1,11 +1,13 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from evaluate.visualize_samples import plot_samples
-import os
-import torchmetrics
-import torch
 import json
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import torch
+import torchmetrics
+
+from src.evaluate.visualize_samples import plot_samples
 
 
 def evaluate_ood(dict_in, dict_ood, vis_path, prefix):
@@ -143,8 +145,7 @@ def plot_roc(pred, target, vis_path, prefix):
 
 def save_data(pred, target, path, prefix):
 
-    data = {"pred" : pred.tolist(), 
-            "target" : target.tolist()}
+    data = {"pred": pred.tolist(), "target": target.tolist()}
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}ood_curves.json"), "w") as f:

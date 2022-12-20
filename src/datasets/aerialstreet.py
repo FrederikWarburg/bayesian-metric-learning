@@ -1,12 +1,11 @@
 import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import torch.utils.data as data
-import torch
 from sklearn.neighbors import NearestNeighbors
 
-from datasets.datahelpers import default_loader, imresize, angle_diff
+from src.datasets.datahelpers import angle_diff, default_loader, imresize
 
 
 class BaseDataset(data.Dataset):
@@ -41,7 +40,7 @@ class BaseDataset(data.Dataset):
         self.envs = envs
         self.name = name
         # TODO: create train and test set
-        self.mode = ""  #'test' if mode in ('test', 'val') else 'train'
+        self.mode = ""  # 'test' if mode in ('test', 'val') else 'train'
 
         # other
         self.transform = transform
@@ -51,7 +50,7 @@ class BaseDataset(data.Dataset):
             env_path = f"{root_dir}/{env}"
             for seq in os.listdir(f"{env_path}/street_images_perspective"):
                 print(f"==> env : {env} {seq}")
-                # TODO: something funcky is going on when we also iterate over both model and seq. I think things are added model times...
+                # TODO: something funcky is going on when we also iterate over both model and seq. I think things are added model times...  # noqa
                 # get len of images from cities so far for indexing
                 _lenQ = len(self.qImages)
                 _lenDb = len(self.dbImages)
@@ -122,7 +121,8 @@ class BaseDataset(data.Dataset):
                             ]
                         )
 
-                        # in training we have two thresholds, one for finding positives and one for finding images that we are certain are negatives.
+                        # in training, we have two thresholds, one for finding positives and one for finding images
+                        # that we are certain are negatives.
                         if self.mode == "train":
                             self.clusters.append([n + _lenDb for n in nI[qidx]])
 

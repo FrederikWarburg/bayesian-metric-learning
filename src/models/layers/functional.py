@@ -1,5 +1,4 @@
 import math
-import pdb
 
 import torch
 import torch.nn.functional as F
@@ -32,7 +31,6 @@ def rmac(x, L=3, eps=1e-6):
     H = x.size(2)
 
     w = min(W, H)
-    w2 = math.floor(w / 2.0 - 1)
 
     b = (max(H, W) - w) / (steps - 1)
     (tmp, idx) = torch.min(
@@ -82,7 +80,7 @@ def rmac(x, L=3, eps=1e-6):
     return v
 
 
-def roipool(x, rpool, L=3, eps=1e-6):
+def roipool(x, rpool, L=3):
     ovr = 0.4  # desired overlap of neighboring regions
     steps = torch.Tensor([2, 3, 4, 5, 6, 7])  # possible regions for the long dimension
 
@@ -90,7 +88,6 @@ def roipool(x, rpool, L=3, eps=1e-6):
     H = x.size(2)
 
     w = min(W, H)
-    w2 = math.floor(w / 2.0 - 1)
 
     b = (max(H, W) - w) / (steps - 1)
     _, idx = torch.min(
@@ -146,5 +143,5 @@ def l2n(x, eps=1e-6):
 
 
 def powerlaw(x, eps=1e-6):
-    x = x + self.eps
+    x = x + eps
     return x.abs().sqrt().mul(x.sign())

@@ -15,4 +15,4 @@ parameters:
   max_pairs:
     value: 30
   config: 
-    value: '../configs/cub200/laplace_online_arccos_pos.yaml'
+    value: 'configs/cub200/laplace_online_arccos_pos.yaml'

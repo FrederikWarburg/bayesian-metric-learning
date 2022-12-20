@@ -1,7 +1,6 @@
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader
-
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
 from torchvision.transforms import InterpolationMode
 
 
@@ -86,14 +85,14 @@ class PlaceRecognitionDataModule(pl.LightningDataModule):
         }
 
         if self.training_dataset == "msls":
-            from datasets.msls import TrainDataset, TestDataset
+            from src.datasets.msls import TestDataset, TrainDataset
 
             train_input["cities"] = self.train_cities
             val_input["cities"] = self.val_cities
             test_input["cities"] = self.test_cities
 
         elif self.training_dataset == "aerialstreet":
-            from datasets.aerialstreet import TrainDataset, TestDataset
+            from src.datasets.aerialstreet import TestDataset, TrainDataset
 
         if stage == "fit":
             self.train_dataset = TrainDataset(**train_input)

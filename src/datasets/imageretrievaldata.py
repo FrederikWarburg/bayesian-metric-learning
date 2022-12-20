@@ -1,8 +1,5 @@
-from random import shuffle
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
-from torchvision import transforms
 
 
 class ImageRetrievalDataModule(pl.LightningDataModule):
@@ -24,15 +21,15 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
     def setup(self, stage="fit"):
 
         if self.dataset == "mnist":
-            from datasets.mnist import TrainDataset, TestDataset
+            from src.datasets.mnist import TestDataset, TrainDataset
         elif self.dataset == "fashionmnist":
-            from datasets.fashionmnist import TrainDataset, TestDataset
-            from datasets.mnist import TestDataset as OODDataset
+            from src.datasets.fashionmnist import TestDataset, TrainDataset
+            from src.datasets.mnist import TestDataset as OODDataset
         elif self.dataset == "cub200":
-            from datasets.cub200 import TrainDataset, TestDataset
-            from datasets.cars196 import TestDataset as OODDataset
+            from src.datasets.cars196 import TestDataset as OODDataset
+            from src.datasets.cub200 import TestDataset, TrainDataset
         elif self.dataset == "lfw":
-            from datasets.lfw import TrainDataset, TestDataset
+            from src.datasets.lfw import TestDataset, TrainDataset
 
         if stage == "fit":
             self.train_dataset = TrainDataset(self.data_dir)

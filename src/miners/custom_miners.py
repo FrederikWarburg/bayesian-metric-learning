@@ -1,8 +1,4 @@
 import torch
-
-# from pytorch_metric_learning.utils import loss_and_miner_utils as lmu
-# from pytorch_metric_learning.miners.base_miner import BaseTupleMiner
-
 from pytorch_metric_learning.utils import common_functions as c_f
 from pytorch_metric_learning.utils.module_with_records_and_reducer import (
     ModuleWithRecordsAndDistance,

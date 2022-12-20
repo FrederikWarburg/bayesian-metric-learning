@@ -8,4 +8,4 @@ parameters:
   type_of_triplets:
     values: ["hard", "semihard", "all"]
   config: 
-    value: '../configs/cub200/deterministic.yaml'
+    value: 'configs/cub200/deterministic.yaml'

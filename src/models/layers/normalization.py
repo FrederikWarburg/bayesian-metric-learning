@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
-
-import models.layers.functional as LF
 from torch import Tensor
 from torch.nn import functional as F
+
+import src.models.layers.functional as LF
+
 # --------------------------------------
 # Normalization layers
 # --------------------------------------
@@ -34,17 +35,28 @@ class PowerLaw(nn.Module):
 
 
 class GlobalBatchNorm1d(nn.BatchNorm1d):
-    def __init__(self, num_features, eps=1e-5, momentum=0.1,
-                 affine=True, track_running_stats=True):
+    def __init__(
+        self,
+        num_features,
+        eps=1e-5,
+        momentum=0.1,
+        affine=True,
+        track_running_stats=True,
+    ):
         super(GlobalBatchNorm1d, self).__init__(
-            num_features, eps, momentum, affine, track_running_stats)
+            num_features, eps, momentum, affine, track_running_stats
+        )
 
     def forward(self, input: Tensor) -> Tensor:
 
         # constrain the batchnorm layer to share same gamma and beta
-        self._parameters['weight'] = torch.ones_like(self._parameters['weight']) * self._parameters['weight'].mean(dim=0, keepdim=True)
-        self._parameters['bias'] = torch.ones_like(self._parameters['bias']) * self._parameters['bias'].mean(dim=0, keepdim=True)
-        
+        self._parameters["weight"] = torch.ones_like(
+            self._parameters["weight"]
+        ) * self._parameters["weight"].mean(dim=0, keepdim=True)
+        self._parameters["bias"] = torch.ones_like(
+            self._parameters["bias"]
+        ) * self._parameters["bias"].mean(dim=0, keepdim=True)
+
         # exponential_average_factor is set to self.momentum
         # (when it is available) only so that it gets updated
         # in ONNX graph when this node is exported to ONNX.

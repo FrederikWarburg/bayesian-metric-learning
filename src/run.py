@@ -1,27 +1,25 @@
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import WandbLogger
 import argparse
-from loguru import logger as loguru_logger
-import torch
-from datetime import datetime
-from dotmap import DotMap
-import yaml
 import os
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 import sys
 
-# data modules
-from datasets.placerecognitiondata import PlaceRecognitionDataModule
-from datasets.imageretrievaldata import ImageRetrievalDataModule
+import pytorch_lightning as pl
+import torch
+import yaml
+from dotenv import load_dotenv
+from dotmap import DotMap
+from loguru import logger as loguru_logger
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 
-# models
-from lightning.deterministic_model import DeterministicModel
-from lightning.laplace_posthoc_model import LaplacePosthocModel
-from lightning.laplace_online_model import LaplaceOnlineModel
-from lightning.pfe_model import PfeModel
-from lightning.mcdropout_model import MCDropoutModel
-from lightning.deep_ensemble_model import DeepEnsembleModel
-from lightning.hib_model import HibModel
+from src.datasets.imageretrievaldata import ImageRetrievalDataModule
+from src.datasets.placerecognitiondata import PlaceRecognitionDataModule
+from src.lightning.deep_ensemble_model import DeepEnsembleModel
+from src.lightning.deterministic_model import DeterministicModel
+from src.lightning.hib_model import HibModel
+from src.lightning.laplace_online_model import LaplaceOnlineModel
+from src.lightning.laplace_posthoc_model import LaplacePosthocModel
+from src.lightning.mcdropout_model import MCDropoutModel
+from src.lightning.pfe_model import PfeModel
 
 
 def parse_args():
@@ -29,12 +27,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="../configs/cub200/det_model.yaml",
+        default="configs/cub200/det_model.yaml",
         type=str,
         help="config file",
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
-    parser.add_argument("--validate-only", action='store_true', help="only validate")
+    parser.add_argument("--validate-only", action="store_true", help="only validate")
     args = parser.parse_args()
     config_path = args.config
 
@@ -43,6 +41,9 @@ def parse_args():
 
     config = DotMap(config)
     print(config)
+
+    if config.data_dir is None:
+        config.data_dir = os.getenv("DATA_DIR")
 
     return config, args
 
@@ -82,13 +83,13 @@ def main(
     if "laplace" in config.model:
         name += f"/{config.loss}"
         name += f"/{config.loss_approx}"
-    savepath = f"../lightning_logs/{name}"
+    savepath = f"lightning_logs/{name}"
 
     model = models[config.model](config, savepath=savepath, seed=args.seed)
 
     # setup logger
-    os.makedirs("../logs", exist_ok=True)
-    logger = WandbLogger(save_dir=f"../logs", name=name)
+    os.makedirs("logs", exist_ok=True)
+    logger = WandbLogger(save_dir="logs", name=name)
 
     # lightning trainer
     checkpoint_callback = ModelCheckpoint(
@@ -108,25 +109,37 @@ def main(
     else:
         callbacks = [LearningRateMonitor(logging_interval="step"), checkpoint_callback]
 
-    # freeze model paramters
-    trainer = pl.Trainer.from_argparse_args(
-        config,
-        accelerator="gpu",
-        precision=32,
-        max_epochs=config.epochs,
-        devices=torch.cuda.device_count(),
-        check_val_every_n_epoch=config.check_val_every_n_epoch,
-        logger=logger,
-        # plugins=DDPPlugin(find_unused_parameters=False),
-        callbacks=callbacks,
-    )
+    n_gpus = torch.cuda.device_count()
+    if n_gpus > 0:
+        trainer = pl.Trainer.from_argparse_args(
+            config,
+            accelerator="gpu",
+            precision=32,
+            max_epochs=config.epochs,
+            devices=n_gpus,
+            check_val_every_n_epoch=config.check_val_every_n_epoch,
+            logger=logger,
+            # plugins=DDPPlugin(find_unused_parameters=False),
+            callbacks=callbacks,
+        )
+    else:
+        trainer = pl.Trainer.from_argparse_args(
+            config,
+            precision=32,
+            max_epochs=config.epochs,
+            check_val_every_n_epoch=config.check_val_every_n_epoch,
+            logger=logger,
+            callbacks=callbacks,
+        )
 
     if args.validate_only:
         model_path = os.path.join(savepath, "checkpoints", "best.ckpt")
-        
+
         if os.path.isfile(model_path):
             statedict = torch.load(model_path)
-            statedict = statedict["state_dict"] if "state_dict" in statedict else statedict
+            statedict = (
+                statedict["state_dict"] if "state_dict" in statedict else statedict
+            )
             model.load_state_dict(statedict)
         else:
             print("checkpoint not found at ")
@@ -134,22 +147,23 @@ def main(
             sys.exit()
     else:
         if config.model in ("laplace_posthoc"):
-            loguru_logger.info(f"Start training!")
+            loguru_logger.info("Start training!")
             model.fit(datamodule=data_module)
         elif config.model in ("deep_ensemble"):
             pass
         else:
-            loguru_logger.info(f"Start testing!")
+            loguru_logger.info("Start testing!")
             # trainer.test(model, datamodule=data_module)
 
-            loguru_logger.info(f"Start training!")
+            loguru_logger.info("Start training!")
             trainer.fit(model, datamodule=data_module)
 
-    loguru_logger.info(f"Start testing!")
+    loguru_logger.info("Start testing!")
     trainer.test(model, datamodule=data_module)
 
 
 if __name__ == "__main__":
+    load_dotenv()
 
     # parse arguments
     config, args = parse_args()

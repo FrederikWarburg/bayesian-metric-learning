@@ -22,8 +22,8 @@
 ###BSUB -N
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
-#BSUB -o ../bsub_logs/gpu_%J.out
-#BSUB -e ../bsub_logs/gpu_%J.err
+#BSUB -o bsub_logs/gpu_%J.out
+#BSUB -e bsub_logs/gpu_%J.err
 # -- end of LSF options --
 
 nvidia-smi

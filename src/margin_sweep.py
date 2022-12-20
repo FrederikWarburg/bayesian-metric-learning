@@ -1,8 +1,12 @@
-import wandb
-from run import main
 import argparse
-from dotmap import DotMap
+import os
+
+import wandb
 import yaml
+from dotenv import load_dotenv
+from dotmap import DotMap
+
+from run import main
 
 # Example sweep configuration
 sweep_configuration = {
@@ -21,7 +25,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="../configs/cub200/deterministic.yaml",
+        default="configs/cub200/deterministic.yaml",
         type=str,
         help="config file",
     )
@@ -32,6 +36,9 @@ def parse_args():
         config = yaml.full_load(file)
 
     config = DotMap(config)
+
+    if config.data_dir is None:
+        config.data_dir = os.getenv("DATA_DIR")
 
     return config, args
 
@@ -47,13 +54,14 @@ def my_train_func():
     main(
         config,
         args,
-        margin=margin,
-        lr=lr,
         sweep_name="margin_lr_sweep/lr_{}_margin_{}".format(lr, margin),
     )
 
 
-sweep_id = wandb.sweep(sweep_configuration)
+if __name__ == "__main__":
+    load_dotenv()
 
-# run the sweep
-wandb.agent(sweep_id, function=my_train_func)
+    sweep_id = wandb.sweep(sweep_configuration)
+
+    # run the sweep
+    wandb.agent(sweep_id, function=my_train_func)

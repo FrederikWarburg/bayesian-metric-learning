@@ -1,12 +1,10 @@
-from turtle import forward
-from lightning.base import Base
-from losses.hib_loss import HibCriterion
 import torch
 import torch.nn as nn
-import os
-import sys
 
-from models.layers.normalization import GlobalBatchNorm1d
+from src.lightning.base import Base
+from src.losses.hib_loss import HibCriterion
+from src.models.layers.normalization import GlobalBatchNorm1d
+
 
 class UncertaintyModule(nn.Module):
     def __init__(self, model):
@@ -18,7 +16,7 @@ class UncertaintyModule(nn.Module):
         self.backbone = model.backbone
         if hasattr(model, "pool"):
             self.pool = model.pool
-        
+
         self.fc_mu = model.linear
 
         in_features = self.fc_mu[0].in_features
@@ -73,9 +71,9 @@ class HibModel(Base):
         # and freeze deterministic part of model
         self.model = UncertaintyModule(self.model)
         self.train_n_samples = 8
-        
+
         self.kl_weight = args.get("kl_weight", 1e-6)
-        
+
         # overwrite criterion with pfe loss
         self.criterion = HibCriterion()
 
@@ -87,11 +85,16 @@ class HibModel(Base):
 
     def compute_loss(self, output, y, indices_tuple):
 
-        loss = self.criterion(output["z_samples"], self.model.alpha, self.model.beta, indices_tuple)
+        loss = self.criterion(
+            output["z_samples"], self.model.alpha, self.model.beta, indices_tuple
+        )
 
         # kl divergence
         # kl = log(sigma^2) + (1 + mu^2) / sigma^2
-        kl_div = -0.5 * torch.sum(torch.log(output["z_sigma"] + 1e-6) + (1 + output["z_mu"] ** 2) / (output["z_sigma"]**2 + 1e-6))
+        kl_div = -0.5 * torch.sum(
+            torch.log(output["z_sigma"] + 1e-6)
+            + (1 + output["z_mu"] ** 2) / (output["z_sigma"] ** 2 + 1e-6)
+        )
         loss = loss + self.kl_weight * kl_div
 
         self.log(

@@ -1,14 +1,13 @@
+import json
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import torch
-import json
-
 from tqdm import tqdm
-from sklearn.neighbors import NearestNeighbors
-import os
 
-from utils.knn import FaissKNeighbors
+from src.utils.knn import FaissKNeighbors
 
 sns.set()
 
@@ -21,7 +20,7 @@ def evaluate_ece(dict, vis_path, prefix):
     # get samples from dict
     z_samples = dict["z_samplesQ"]
     targets = dict["targets"]
-    
+
     # compute k-nn from samples
     targets, confidences, predicted = compute_knn(z_samples, targets)
 
@@ -154,11 +153,15 @@ def plot_calibration_curve(acc, confidences, path, prefix, bins=10):
 
 def save_data(acc, confidences, targets, bin_sizes, path, prefix):
 
-    data = {"acc" : acc.tolist(), 
-            "confidences" : confidences.tolist(),
-            "targets" : targets.tolist(),
-            "bin_sizes" : bin_sizes.tolist()}
+    data = {
+        "acc": acc.tolist(),
+        "confidences": confidences.tolist(),
+        "targets": targets.tolist(),
+        "bin_sizes": bin_sizes.tolist(),
+    }
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
-    with open(os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w") as f:
+    with open(
+        os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w"
+    ) as f:
         json.dump(data, f)

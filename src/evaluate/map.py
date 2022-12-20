@@ -75,7 +75,7 @@ def compute_map(ranks, gnd, kappas=[]):
 
         try:
             qgndj = np.array(gnd[i]["junk"])
-        except:
+        except KeyError:
             qgndj = np.empty(0)
 
         # sorted positions of positive and junk images (0 based)

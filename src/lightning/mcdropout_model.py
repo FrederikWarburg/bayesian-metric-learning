@@ -1,10 +1,11 @@
-from lightning.base import Base
 import torch
+
+from src.lightning.base import Base
 
 
 def enable_dropout(m):
     for each_module in m.modules():
-        if each_module.__class__.__name__.startswith('Dropout'):
+        if each_module.__class__.__name__.startswith("Dropout"):
             each_module.train()
 
 
@@ -19,10 +20,10 @@ class MCDropoutModel(Base):
         zs = []
         for i in range(n_samples):
             z = self.model(x)
-            zs.append(z['z_mu'])
-        
+            zs.append(z["z_mu"])
+
         zs = torch.stack(zs)
-        
+
         # compute statistics
         z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
@@ -30,7 +31,7 @@ class MCDropoutModel(Base):
         # ensure that we are on unit sphere
         z_mu = z_mu / z_mu.norm(dim=-1, keepdim=True)
 
-        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples" : zs.permute(1, 0, 2)}
+        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples": zs.permute(1, 0, 2)}
 
     def compute_loss(self, output, y, indices_tuple):
 

@@ -3,7 +3,7 @@
 
 # model specific
 model : "laplace_posthoc"
-resume : "../lightning_logs/fashionmnist/deterministic"
+resume : "lightning_logs/fashionmnist/deterministic"
 arch : "linear"
 latent_dim : 3
 
@@ -24,7 +24,7 @@ margin : 0.7
 distance : "euclidean"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : null
 dataset : "fashionmnist"
 batch_size : 64
 split_query_database : False

@@ -1,8 +1,8 @@
 import os
-from PIL import Image
-import numpy as np
 
+import numpy as np
 import torch
+from PIL import Image
 
 
 def angle_diff(a, b):
@@ -32,7 +32,7 @@ def pil_loader(path):
         # with open(path, 'rb') as f:
         img = Image.open(path)
         return img.convert("RGB")
-    except:
+    except IOError:
         print("Black Image Used for path: ", path)
         img = Image.fromarray(np.zeros((20, 14, 3), dtype=np.uint8))
         return img.convert("RGB")

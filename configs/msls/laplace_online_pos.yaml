@@ -27,7 +27,7 @@ margin : 1
 distance : "euclidean"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : null
 dataset : "msls"
 batch_size : 64
 split_query_database : False

@@ -22,7 +22,7 @@ for f in ${CONFIG_PATHS[@]}
 do
     for seed in {1..5}
     do
-        CUDA_VISIBLE_DEVICES=5 python run.py --config "../configs/fashionmnist/$f.yaml" --seed $seed
+        CUDA_VISIBLE_DEVICES=5 python run.py --config "configs/fashionmnist/$f.yaml" --seed $seed
     done
 done
 

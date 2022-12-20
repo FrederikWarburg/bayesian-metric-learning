@@ -19,7 +19,7 @@ margin : 0.7
 distance : "euclidean"
 
 # data specific
-data_dir : "/data/"
+data_dir : null
 dataset : "mnist"
 batch_size : 256
 split_query_database : False

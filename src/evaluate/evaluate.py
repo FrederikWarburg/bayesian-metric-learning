@@ -1,10 +1,12 @@
-import numpy as np
-from evaluate.map import mapk
-from evaluate.recall import recall
-from evaluate.ood import evaluate_ood
-from evaluate.ece import evaluate_ece
-from evaluate.ausc import evaluate_ausc
 import os
+
+import numpy as np
+
+from src.evaluate.ausc import evaluate_ausc
+from src.evaluate.ece import evaluate_ece
+from src.evaluate.map import mapk
+from src.evaluate.ood import evaluate_ood
+from src.evaluate.recall import recall
 
 
 def evaluate(ranks, pidxs):

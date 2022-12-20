@@ -1,13 +1,13 @@
-import pandas as pd
-from os.path import join
-import numpy as np
-import torch.utils.data as data
-import sys
-import torch
 import os
+import sys
+from os.path import join
+
+import numpy as np
+import pandas as pd
+import torch.utils.data as data
 from sklearn.neighbors import NearestNeighbors
 
-from datasets.datahelpers import default_loader, imresize
+from src.datasets.datahelpers import default_loader, imresize
 
 default_cities = {
     "train": [
@@ -126,8 +126,8 @@ class BaseDataset(data.Dataset):
                         join(root_dir, subdir, city, "database", "raw.csv"), index_col=0
                     )
 
-                    qData = qData.loc[(qDataRaw["pano"] == False).values, :]
-                    dbData = dbData.loc[(dbDataRaw["pano"] == False).values, :]
+                    qData = qData.loc[(qDataRaw["pano"] is False).values, :]
+                    dbData = dbData.loc[(dbDataRaw["pano"] is False).values, :]
 
                 # append image keys with full path
                 self.qImages.extend(
@@ -163,7 +163,8 @@ class BaseDataset(data.Dataset):
                         self.qidxs.append(qidx + _lenQ)
                         self.pidxs.append([p + _lenDb for p in pI[qidx]])
 
-                        # in training we have two thresholds, one for finding positives and one for finding images that we are certain are negatives.
+                        # in training, we have two thresholds, one for finding positives and one for finding images
+                        # that we are certain are negatives.
                         if self.mode == "train":
 
                             self.clusters.append([n + _lenDb for n in nI[qidx]])
@@ -183,11 +184,12 @@ class BaseDataset(data.Dataset):
             elif self.mode in ["test2"]:
                 raise NotImplementedError
 
-            # if a combination of cities, task and subtask is chosen, where there are no query/database images, then exit
+            # if a combination of cities task and subtask is chosen where there are no query/database images then exit
             if len(self.dbImages) == 0:
                 print("Exiting...")
                 print(
-                    "A combination of cities, task and subtask have been chosen, where there are no query/database images."
+                    "A combination of cities, task and subtask have been chosen, "
+                    "where there are no query/database images."
                 )
                 print("Try choosing a different subtask or more cities")
                 sys.exit()

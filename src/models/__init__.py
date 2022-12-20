@@ -1,5 +1,5 @@
-from models.networks.imageretrievalnet import init_network
-from models.networks.mnistmodel import MnistLinearNet
+from src.models.networks.imageretrievalnet import init_network
+from src.models.networks.mnistmodel import MnistLinearNet
 
 
 def configure_model(args):
@@ -29,11 +29,11 @@ def configure_model(args):
 
 
 def get_model_parameters(model, args):
-    
+
     # only pfe
     if args.model == "pfe":
         parameters = [{"params": model.fc_log_var.parameters()}]
-        
+
     elif hasattr(model, "pool"):
         parameters = []
 
@@ -51,7 +51,7 @@ def get_model_parameters(model, args):
                 "weight_decay": 0,
             }
         )
-        
+
         if args.model == "hib":
             parameters.append({"params": model.alpha})
             parameters.append({"params": model.beta})

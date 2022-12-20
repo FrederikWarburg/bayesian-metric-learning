@@ -3,11 +3,10 @@
 
 # model specific
 model : "pfe"
-resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-resume : "../lightning_logs/msls/deterministic"
+resume : "lightning_logs/msls/deterministic"
 latent_dim : 512
 
 # logging
@@ -23,7 +22,7 @@ distance : "euclidean"
 type_of_triplets : "semihard" # easy, semihard, hard, all
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : null
 dataset : "msls"
 batch_size : 64
 split_query_database : False

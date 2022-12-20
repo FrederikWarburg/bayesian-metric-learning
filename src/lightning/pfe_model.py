@@ -1,12 +1,12 @@
-from turtle import forward
-from lightning.base import Base
-from losses.pfe_loss import PfeCriterion
-import torch
-import torch.nn as nn
 import os
 import sys
 
-from models.layers.normalization import GlobalBatchNorm1d
+import torch
+import torch.nn as nn
+
+from src.lightning.base import Base
+from src.losses.pfe_loss import PfeCriterion
+from src.models.layers.normalization import GlobalBatchNorm1d
 
 
 class UncertaintyModule(nn.Module):
@@ -26,7 +26,7 @@ class UncertaintyModule(nn.Module):
                 param.requires_grad = False
         else:
             self.backbone = model.backbone
-        
+
             # Freeze backbone parameters
             for param in self.backbone.parameters():
                 param.requires_grad = False

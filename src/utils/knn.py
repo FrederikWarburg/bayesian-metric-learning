@@ -1,5 +1,5 @@
-import numpy as np
 import faiss
+import numpy as np
 
 
 class FaissKNeighbors:

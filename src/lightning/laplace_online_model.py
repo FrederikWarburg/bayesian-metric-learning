@@ -1,21 +1,13 @@
-from lightning.base import Base
 import torch
-import torch.nn as nn
-import os
-import sys
-
-sys.path.append("../stochman")
-from stochman import nnj
-from stochman import ContrastiveHessianCalculator, ArccosHessianCalculator
+import wandb
+from stochman import ArccosHessianCalculator, ContrastiveHessianCalculator
 from stochman.laplace import DiagLaplace
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
-from tqdm import tqdm
-import wandb
 
-from miners.custom_miners import TripletMarginMinerPR
-from miners.triplet_miners import TripletMarginMiner
-
+from src.lightning.base import Base
+from src.miners.custom_miners import TripletMarginMinerPR
+from src.miners.triplet_miners import TripletMarginMiner
 
 hessian_calculators = {
     "contrastive": ContrastiveHessianCalculator,
@@ -36,9 +28,9 @@ class LaplaceOnlineModel(Base):
             self.model.linear = convert_to_stochman(self.model.linear)
 
         self.hessian_calculator = hessian_calculators[args.loss](
-            wrt="weight", 
-            shape="diagonal", 
-            speed="half", 
+            wrt="weight",
+            shape="diagonal",
+            speed="half",
             method=args.loss_approx,
         )
 
@@ -67,7 +59,9 @@ class LaplaceOnlineModel(Base):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets=args.get("type_of_triplets_hessian", "all"),  # [easy, hard, semihard, all]
+                type_of_triplets=args.get(
+                    "type_of_triplets_hessian", "all"
+                ),  # [easy, hard, semihard, all]
             )
 
     def training_step(self, batch, batch_idx):
@@ -110,7 +104,9 @@ class LaplaceOnlineModel(Base):
                 # TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
                 if len(hessian_indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(hessian_indices_tuple[0].size(0))[: self.max_pairs]
+                    idx = torch.randperm(hessian_indices_tuple[0].size(0))[
+                        : self.max_pairs
+                    ]
                     hessian_indices_tuple = (
                         hessian_indices_tuple[0][idx],
                         hessian_indices_tuple[1][idx],
@@ -137,8 +133,8 @@ class LaplaceOnlineModel(Base):
             self.counter += 1
 
         # log hessian and sigma_q
-        wandb.log({"extra/hessian" : self.hessian.sum()})
-        wandb.log({"extra/sigma_q" : sigma_q.sum()})
+        wandb.log({"extra/hessian": self.hessian.sum()})
+        wandb.log({"extra/sigma_q": sigma_q.sum()})
 
         return loss
 
@@ -202,12 +198,12 @@ class LaplaceOnlineModel(Base):
 
         if self.place_rec and self.args.split_query_database:
             b, _ = embeddings.shape
+            b2 = b // 2
+            ref_emb = embeddings[b2:]
+            embeddings = embeddings[:b2]
 
-            ref_emb = embeddings[b // 2 :]
-            embeddings = embeddings[: b // 2]
-
-            ref_labels = labels[b // 2 :]
-            labels = labels[: b // 2]
+            ref_labels = labels[b2:]
+            labels = labels[:b2]
         else:
             ref_emb = None
             ref_labels = None
@@ -216,6 +212,8 @@ class LaplaceOnlineModel(Base):
 
         self.log("hessian_tuple_stats/an_dist", float(self.hessian_miner.neg_pair_dist))
         self.log("hessian_tuple_stats/ap_dist", float(self.hessian_miner.pos_pair_dist))
-        self.log("hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets))
+        self.log(
+            "hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets)
+        )
 
         return indices_tuple

@@ -3,11 +3,10 @@
 
 # model specific
 model : "deep_ensemble"
-resume : ""
 arch : "resnet50"
 pool : "gem"
 whitening : True
-resume : "../lightning_logs/cub200/deterministic"
+resume : "lightning_logs/cub200/deterministic"
 latent_dim : 512
 seeds : [1,2,3,4,5]
 
@@ -24,7 +23,7 @@ distance : "euclidean"
 type_of_triplets : "semihard"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : null
 dataset : "cub200"
 batch_size : 64
 split_query_database : False

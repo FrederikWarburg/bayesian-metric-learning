@@ -1,30 +1,26 @@
-from ast import Break
-from dataclasses import field
-import pytorch_lightning as pl
-from models import configure_model, get_model_parameters
-import torchvision.transforms as transforms
-import torch
-from pytorch_metric_learning import distances
+import json
 import math
+import os
+
 import numpy as np
-from losses.loss import configure_metric_loss
-from pytorch_metric_learning import distances
-import wandb
+import pytorch_lightning as pl
+import torch
 import torchvision
-from evaluate.utils import (
+import torchvision.transforms as transforms
+import wandb
+from pytorch_metric_learning import distances
+
+from src.evaluate.evaluate import evaluate, evaluate_uncertainties
+from src.evaluate.ranking import compute_rank
+from src.evaluate.utils import (
     get_pos_idx,
     get_pos_idx_place_recognition,
     remove_duplicates,
 )
-from evaluate.evaluate import evaluate, evaluate_uncertainties
-from evaluate.ranking import compute_rank
-from pytorch_metric_learning import miners
-import torch
-from miners.custom_miners import TripletMarginMinerPR
-from miners.triplet_miners import TripletMarginMiner
-import json
-import os
-import csv
+from src.losses.loss import configure_metric_loss
+from src.miners.custom_miners import TripletMarginMinerPR
+from src.miners.triplet_miners import TripletMarginMiner
+from src.models import configure_model, get_model_parameters
 
 
 class Base(pl.LightningModule):
@@ -39,7 +35,7 @@ class Base(pl.LightningModule):
 
         print("==> test n_samples: ", self.test_n_samples)
 
-        ### pytorch-metric-learning stuff ###
+        # pytorch-metric-learning stuff
         if args.distance == "cosine":
             self.distance = distances.CosineSimilarity()
         elif args.distance == "euclidean":
@@ -80,10 +76,10 @@ class Base(pl.LightningModule):
         self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
-        
+
         im, y = self.format_batch(batch)
         output = self.forward(im, self.train_n_samples)
-        
+
         indices_tuple = self.get_indices_tuple(output["z_mu"], y)
 
         loss = self.compute_loss(output, y, indices_tuple)
@@ -117,12 +113,12 @@ class Base(pl.LightningModule):
 
         if self.place_rec and self.args.split_query_database:
             b, _ = embeddings.shape
+            b2 = b // 2
+            ref_emb = embeddings[b2:]
+            embeddings = embeddings[:b2]
 
-            ref_emb = embeddings[b // 2 :]
-            embeddings = embeddings[: b // 2]
-
-            ref_labels = labels[b // 2 :]
-            labels = labels[: b // 2]
+            ref_labels = labels[b2:]
+            labels = labels[:b2]
         else:
             ref_emb = None
             ref_labels = None
@@ -176,7 +172,7 @@ class Base(pl.LightningModule):
         )
 
     def test_step(self, batch, batch_idx, dataloader_idx=1):
-        
+
         return self.forward_step(
             batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
         )
@@ -333,8 +329,9 @@ class Base(pl.LightningModule):
                 _,
                 _,
             ) = x.shape
-            x_ref = x[b // 2 :]
-            x = x[: b // 2]
+            b2 = b // 2
+            x_ref = x[b2:]
+            x = x[:b2]
         else:
             x_ref = x
 

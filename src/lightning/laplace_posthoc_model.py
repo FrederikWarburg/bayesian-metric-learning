@@ -1,19 +1,14 @@
-from lightning.base import Base
-import torch
-import torch.nn as nn
 import os
 import sys
 
-sys.path.append("../stochman")
-from stochman import nnj
-from stochman import ContrastiveHessianCalculator, ArccosHessianCalculator
+import torch
+from stochman import ArccosHessianCalculator, ContrastiveHessianCalculator
 from stochman.laplace import DiagLaplace
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
 
-import torch
-
+from src.lightning.base import Base
 
 hessian_calculators = {
     "contrastive": ContrastiveHessianCalculator,
@@ -36,10 +31,10 @@ class LaplacePosthocModel(Base):
         # load model checkpoint
         resume = os.path.join(args.resume, str(seed), "checkpoints/best.ckpt")
         if not os.path.isfile(resume):
-           print(f"path {resume} not found.")
-           print("laplace posthoc requires a pretrained model")
-           print("fix path and try again.")
-           sys.exit()
+            print(f"path {resume} not found.")
+            print("laplace posthoc requires a pretrained model")
+            print("fix path and try again.")
+            sys.exit()
 
         # load model parameters
         self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
@@ -60,7 +55,9 @@ class LaplacePosthocModel(Base):
         self.laplace = DiagLaplace()
 
         # register hessian. It will be overwritten when fitting model
-        hessian = torch.zeros_like(parameters_to_vector(self.model.linear.parameters()), device="cuda:0")
+        hessian = torch.zeros_like(
+            parameters_to_vector(self.model.linear.parameters()), device="cuda:0"
+        )
         self.register_buffer("hessian", hessian)
 
     def forward(self, x, n_samples=1):
@@ -101,7 +98,7 @@ class LaplacePosthocModel(Base):
         # compute statistics
         z_mu = zs.mean(dim=0)
         z_sigma = zs.std(dim=0)
-        
+
         # put mean parameters back
         vector_to_parameters(mu_q, self.model.linear.parameters())
 
@@ -114,7 +111,7 @@ class LaplacePosthocModel(Base):
         self.model.eval()
 
         for batch in tqdm(train_loader):
-        
+
             x, y = self.format_batch(batch)
 
             x = x.cuda()
@@ -140,7 +137,7 @@ class LaplacePosthocModel(Base):
                     indices_tuple[1][idx],
                     indices_tuple[2][idx],
                 )
-            
+
             h = self.hessian_calculator.compute_hessian(
                 x, self.model.linear, indices_tuple
             )

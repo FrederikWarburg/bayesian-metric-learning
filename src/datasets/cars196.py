@@ -1,10 +1,9 @@
-from torchvision import transforms
-from torch.utils.data import Dataset
-import numpy as np
-import time
-from PIL import Image
 import os
-from scipy.io import loadmat
+
+import numpy as np
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision import transforms
 
 
 class TrainDataset(Dataset):

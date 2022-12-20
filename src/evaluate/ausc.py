@@ -1,10 +1,12 @@
-import torch
-from sklearn.neighbors import NearestNeighbors
-from utils.knn import FaissKNeighbors
-import numpy as np
-import matplotlib.pyplot as plt
-import os
 import json
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
+from src.utils.knn import FaissKNeighbors
+
 
 def evaluate_ausc(dict, path, prefix):
 
@@ -72,10 +74,14 @@ def plot_sparsification_curve(targets, z_mu, z_sigma, path, prefix):
 
 def save_data(targets, z_mu, z_sigma, path, prefix):
 
-    data = {"targets" : targets.tolist(), 
-            "z_mu" : z_mu.tolist(),
-            "z_sigma" : z_sigma.tolist()}
+    data = {
+        "targets": targets.tolist(),
+        "z_mu": z_mu.tolist(),
+        "z_sigma": z_sigma.tolist(),
+    }
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
-    with open(os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w") as f:
+    with open(
+        os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w"
+    ) as f:
         json.dump(data, f)

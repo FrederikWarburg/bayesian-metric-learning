@@ -1,7 +1,6 @@
-import torch
 import torch.nn as nn
-from models.layers.normalization import L2Norm
-import torch.nn.functional as F
+
+from src.models.layers.normalization import L2Norm
 
 """
 class MnistLinearNet(nn.Module):
@@ -49,7 +48,7 @@ class MnistLinearNet(nn.Module):
         )
 
         if dropout_rate > 0:
-            
+
             print("Using dropout rate: {}".format(dropout_rate))
             self.backbone = nn.Sequential(
                 nn.Conv2d(1, 32, 3, 1),

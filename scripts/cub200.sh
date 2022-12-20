@@ -22,8 +22,8 @@
 ###BSUB -N
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
-#BSUB -o ../bsub_logs/gpu_%J.out
-#BSUB -e ../bsub_logs/gpu_%J.err
+#BSUB -o bsub_logs/gpu_%J.out
+#BSUB -e bsub_logs/gpu_%J.err
 # -- end of LSF options --
 
 nvidia-smi
@@ -32,11 +32,11 @@ module load cuda/11.3
 module load gcc/9.2.0 
 source activate metric_learning
 
-#### python run.py --config ../configs/cub200/deterministic.yaml
-python run.py --config ../configs/cub200/pfe.yaml
-python run.py --config ../configs/cub200/laplace_posthoc_fix.yaml
-python run.py --config ../configs/cub200/laplace_posthoc_full.yaml
-python run.py --config ../configs/cub200/laplace_posthoc_pos.yaml
-python run.py --config ../configs/cub200/laplace_online_fix.yaml
-python run.py --config ../configs/cub200/laplace_online_full.yaml
-python run.py --config ../configs/cub200/laplace_online_pos.yaml
+#### python run.py --config configs/cub200/deterministic.yaml
+python run.py --config configs/cub200/pfe.yaml
+python run.py --config configs/cub200/laplace_posthoc_fix.yaml
+python run.py --config configs/cub200/laplace_posthoc_full.yaml
+python run.py --config configs/cub200/laplace_posthoc_pos.yaml
+python run.py --config configs/cub200/laplace_online_fix.yaml
+python run.py --config configs/cub200/laplace_online_full.yaml
+python run.py --config configs/cub200/laplace_online_pos.yaml

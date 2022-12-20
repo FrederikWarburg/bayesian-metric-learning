@@ -1,4 +1,4 @@
-from pytorch_metric_learning import losses, distances
+from pytorch_metric_learning import distances, losses
 
 
 def configure_metric_loss(loss, distance, margin):

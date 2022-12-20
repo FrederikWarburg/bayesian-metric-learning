@@ -1,5 +1,6 @@
-from lightning.base import Base
 import torch
+
+from src.lightning.base import Base
 
 
 class DeterministicModel(Base):

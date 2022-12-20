@@ -11,4 +11,4 @@ parameters:
   type_of_triplets:
     values: ["hard", "semihard"]
   config: 
-    value: '../configs/msls/deterministic.yaml'
+    value: 'configs/msls/deterministic.yaml'

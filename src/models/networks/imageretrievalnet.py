@@ -1,12 +1,10 @@
 import os
 
 import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
-
 import torchvision
 
-from models.layers.pooling import MAC, SPoC, GeM, GeMmp, RMAC, Rpool
-from models.layers.normalization import L2Norm, PowerLaw
+from src.models.layers.normalization import L2Norm
+from src.models.layers.pooling import MAC, RMAC, GeM, GeMmp, SPoC
 
 
 def get_root():
@@ -119,7 +117,7 @@ class ImageRetrievalNet(nn.Module):
         tmpstr = "  (" + "meta" + "): dict( \n"  # + self.meta.__repr__() + '\n'
         tmpstr += "     architecture: {}\n".format(self.meta["architecture"])
         tmpstr += "     pooling: {}\n".format(self.meta["pooling"])
-        #tmpstr += "     whitening: {}\n".format(self.meta["whitening"])
+        # tmpstr += "     whitening: {}\n".format(self.meta["whitening"])
         tmpstr += "     outputdim: {}\n".format(self.meta["outputdim"])
         tmpstr = tmpstr + "  )\n"
         return tmpstr

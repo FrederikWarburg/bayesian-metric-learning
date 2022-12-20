@@ -1,12 +1,13 @@
-import wandb
-from run import main
 import argparse
-from dotmap import DotMap
-import yaml
-
-# import multiprocessing as mp
+import os
 from multiprocessing import Process
 
+import wandb
+import yaml
+from dotenv import load_dotenv
+from dotmap import DotMap
+
+from run import main
 
 # Example sweep configuration
 sweep_configuration = {
@@ -25,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="../configs/fashionmnist/laplace_online_full.yaml",
+        default="configs/fashionmnist/laplace_online_full.yaml",
         type=str,
         help="config file",
     )
@@ -36,6 +37,9 @@ def parse_args():
         config = yaml.full_load(file)
 
     config = DotMap(config)
+
+    if config.data_dir is None:
+        config.data_dir = os.getenv("DATA_DIR")
 
     return config, args
 
@@ -55,29 +59,29 @@ def my_train_func():
     main(
         config,
         args,
-        type_of_triplets=type_of_triplets,
-        max_pairs=max_pairs,
         sweep_name=sweep_name,
     )
 
 
-sweep_id = wandb.sweep(sweep_configuration)
+if __name__ == "__main__":
+    load_dotenv()
+    sweep_id = wandb.sweep(sweep_configuration)
 
-# run the sweep
-agents = 4
+    # run the sweep
+    agents = 4
 
-procs = []
-for process in range(agents):
-    proc = Process(
-        target=wandb.agent,
-        args=(
-            sweep_id,
-            my_train_func,
-        ),
-    )
-    proc.start()
-    procs.append(proc)
+    procs = []
+    for process in range(agents):
+        proc = Process(
+            target=wandb.agent,
+            args=(
+                sweep_id,
+                my_train_func,
+            ),
+        )
+        proc.start()
+        procs.append(proc)
 
-# complete the processes
-for proc in procs:
-    proc.join()
+    # complete the processes
+    for proc in procs:
+        proc.join()

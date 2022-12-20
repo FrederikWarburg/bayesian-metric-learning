@@ -1,11 +1,10 @@
-from turtle import forward
-from lightning.base import Base
-from losses.pfe_loss import PfeCriterion
-import torch
-import torch.nn as nn
 import os
 import sys
 from copy import deepcopy
+
+import torch
+
+from src.lightning.base import Base
 
 
 def rename_keys(statedict):
@@ -30,11 +29,11 @@ class DeepEnsembleModel(Base):
                 sys.exit()
 
             self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
-            model= deepcopy(self.model).to("cuda:0")
+            model = deepcopy(self.model).to("cuda:0")
             self.models.append(model)
 
     def forward(self, x, n_samples=1):
-        
+
         zs = []
         for model in self.models:
             z = model(x)
@@ -49,5 +48,4 @@ class DeepEnsembleModel(Base):
         # ensure that we are on the unit sphere
         z_mu = z_mu / torch.norm(zs, dim=-1, keepdim=True)
 
-        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples" : zs.permute(1, 0, 2)}
-
+        return {"z_mu": z_mu, "z_sigma": z_sigma, "z_samples": zs.permute(1, 0, 2)}
