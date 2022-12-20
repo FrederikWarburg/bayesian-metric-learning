@@ -53,9 +53,7 @@ def my_train_func():
 
     config, args = parse_args()
 
-    sweep_name = "miner_sweep/type_of_triplet_{}_max_pairs_{}".format(
-        type_of_triplets, max_pairs
-    )
+    sweep_name = "miner_sweep/type_of_triplet_{}_max_pairs_{}".format(type_of_triplets, max_pairs)
     main(
         config,
         args,

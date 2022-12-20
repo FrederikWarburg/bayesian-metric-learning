@@ -65,16 +65,7 @@ class GeMmp(nn.Module):
         return LF.gem(x, p=self.p.unsqueeze(-1).unsqueeze(-1), eps=self.eps)
 
     def __repr__(self):
-        return (
-            self.__class__.__name__
-            + "("
-            + "p="
-            + "[{}]".format(self.mp)
-            + ", "
-            + "eps="
-            + str(self.eps)
-            + ")"
-        )
+        return self.__class__.__name__ + "(" + "p=" + "[{}]".format(self.mp) + ", " + "eps=" + str(self.eps) + ")"
 
 
 class RMAC(nn.Module):

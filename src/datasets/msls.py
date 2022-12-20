@@ -119,28 +119,18 @@ class BaseDataset(data.Dataset):
                 if self.exclude_panos:
 
                     # load query / database data
-                    qDataRaw = pd.read_csv(
-                        join(root_dir, subdir, city, "query", "raw.csv"), index_col=0
-                    )
-                    dbDataRaw = pd.read_csv(
-                        join(root_dir, subdir, city, "database", "raw.csv"), index_col=0
-                    )
+                    qDataRaw = pd.read_csv(join(root_dir, subdir, city, "query", "raw.csv"), index_col=0)
+                    dbDataRaw = pd.read_csv(join(root_dir, subdir, city, "database", "raw.csv"), index_col=0)
 
                     qData = qData.loc[(qDataRaw["pano"] is False).values, :]
                     dbData = dbData.loc[(dbDataRaw["pano"] is False).values, :]
 
                 # append image keys with full path
                 self.qImages.extend(
-                    [
-                        join(root_dir, subdir, city, "query", "images", key + ".jpg")
-                        for key in qData["key"].values
-                    ]
+                    [join(root_dir, subdir, city, "query", "images", key + ".jpg") for key in qData["key"].values]
                 )
                 self.dbImages.extend(
-                    [
-                        join(root_dir, subdir, city, "database", "images", key + ".jpg")
-                        for key in dbData["key"].values
-                    ]
+                    [join(root_dir, subdir, city, "database", "images", key + ".jpg") for key in dbData["key"].values]
                 )
 
                 # utm coordinates
@@ -169,16 +159,8 @@ class BaseDataset(data.Dataset):
 
                             self.clusters.append([n + _lenDb for n in nI[qidx]])
 
-                self.utmQ = (
-                    np.concatenate([self.utmQ, utmQ], axis=0)
-                    if hasattr(self, "utmQ")
-                    else utmQ
-                )
-                self.utmDb = (
-                    np.concatenate([self.utmDb, utmDb], axis=0)
-                    if hasattr(self, "utmDb")
-                    else utmDb
-                )
+                self.utmQ = np.concatenate([self.utmQ, utmQ], axis=0) if hasattr(self, "utmQ") else utmQ
+                self.utmDb = np.concatenate([self.utmDb, utmDb], axis=0) if hasattr(self, "utmDb") else utmDb
 
             # when GPS / UTM / pano info is not available
             elif self.mode in ["test2"]:
@@ -220,9 +202,7 @@ class BaseDataset(data.Dataset):
         fmt_str += "    Number of tuples processed in an epoch: {}\n".format(self.qsize)
         fmt_str += "    Pool size for negative remining: {}\n".format(self.poolsize)
         tmp = "    Transforms (if any): "
-        fmt_str += "{0}{1}\n".format(
-            tmp, self.transform.__repr__().replace("\n", "\n" + " " * len(tmp))
-        )
+        fmt_str += "{0}{1}\n".format(tmp, self.transform.__repr__().replace("\n", "\n" + " " * len(tmp)))
         return fmt_str
 
 

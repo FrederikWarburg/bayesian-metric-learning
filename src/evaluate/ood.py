@@ -85,9 +85,7 @@ def compute_auroc(pred, target):
 
     # compute auroc
     auroc = torchmetrics.AUROC(num_classes=1)
-    auroc_score = auroc(
-        torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1)
-    )
+    auroc_score = auroc(torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1))
 
     return auroc_score
 
@@ -96,9 +94,7 @@ def compute_auprc(pred, target):
 
     # plot precision recall curve
     pr_curve = torchmetrics.PrecisionRecallCurve(pos_label=1)
-    precision, recall, thresholds = pr_curve(
-        torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1)
-    )
+    precision, recall, thresholds = pr_curve(torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1))
 
     # compute auprc (area under precission recall curve)
     auc = torchmetrics.AUC(reorder=True)
@@ -111,9 +107,7 @@ def plot_prc(pred, target, vis_path, prefix):
 
     # plot precision recall curve
     pr_curve = torchmetrics.PrecisionRecallCurve(pos_label=1)
-    precision, recall, thresholds = pr_curve(
-        torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1)
-    )
+    precision, recall, thresholds = pr_curve(torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1))
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     plt.plot(recall, precision)
@@ -129,9 +123,7 @@ def plot_roc(pred, target, vis_path, prefix):
 
     # plot roc curve
     roc = torchmetrics.ROC(num_classes=1)
-    fpr, tpr, thresholds = roc(
-        torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1)
-    )
+    fpr, tpr, thresholds = roc(torch.tensor(pred).unsqueeze(1), torch.tensor(target).unsqueeze(1))
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     plt.plot(fpr, tpr)

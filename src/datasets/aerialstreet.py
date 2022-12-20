@@ -60,12 +60,7 @@ class BaseDataset(data.Dataset):
                 qData = pd.read_csv(f"{q_path}/reference_perspective.csv")
 
                 # append image keys with full path
-                self.qImages.extend(
-                    [
-                        f"{q_path}/images/{k}.jpg"
-                        for k in qData["perspective_filename"].values
-                    ]
-                )
+                self.qImages.extend([f"{q_path}/images/{k}.jpg" for k in qData["perspective_filename"].values])
                 utmQ = qData[["UTM Easting", "UTM Northing"]].values.reshape(-1, 2)
                 casQ = qData["perspective_heading[deg]"].values
 
@@ -76,12 +71,7 @@ class BaseDataset(data.Dataset):
                     dbData = pd.read_csv(f"{db_path}/{model}/{seq}/reference.csv")
 
                     # append image keys with full path
-                    self.dbImages.extend(
-                        [
-                            f"{db_path}/{model}/{seq}/images/{k}"
-                            for k in dbData["rgb"].values
-                        ]
-                    )
+                    self.dbImages.extend([f"{db_path}/{model}/{seq}/images/{k}" for k in dbData["rgb"].values])
                     utmDb = (
                         np.concatenate(
                             [
@@ -114,11 +104,7 @@ class BaseDataset(data.Dataset):
 
                         self.qidxs.append(qidx + _lenQ)
                         self.pidxs.append(
-                            [
-                                p + _lenDb
-                                for p in pI[qidx]
-                                if abs(angle_diff(casQ[qidx], casDb[p])) < 22.5
-                            ]
+                            [p + _lenDb for p in pI[qidx] if abs(angle_diff(casQ[qidx], casDb[p])) < 22.5]
                         )
 
                         # in training, we have two thresholds, one for finding positives and one for finding images
@@ -126,26 +112,10 @@ class BaseDataset(data.Dataset):
                         if self.mode == "train":
                             self.clusters.append([n + _lenDb for n in nI[qidx]])
 
-                self.utmDb = (
-                    np.concatenate([self.utmDb, utmDb], axis=0)
-                    if hasattr(self, "utmDb")
-                    else utmDb
-                )
-                self.casDb = (
-                    np.concatenate([self.casDb, casDb], axis=0)
-                    if hasattr(self, "casDb")
-                    else casDb
-                )
-                self.utmQ = (
-                    np.concatenate([self.utmQ, utmQ], axis=0)
-                    if hasattr(self, "utmQ")
-                    else utmQ
-                )
-                self.casQ = (
-                    np.concatenate([self.casQ, casQ], axis=0)
-                    if hasattr(self, "casQ")
-                    else casQ
-                )
+                self.utmDb = np.concatenate([self.utmDb, utmDb], axis=0) if hasattr(self, "utmDb") else utmDb
+                self.casDb = np.concatenate([self.casDb, casDb], axis=0) if hasattr(self, "casDb") else casDb
+                self.utmQ = np.concatenate([self.utmQ, utmQ], axis=0) if hasattr(self, "utmQ") else utmQ
+                self.casQ = np.concatenate([self.casQ, casQ], axis=0) if hasattr(self, "casQ") else casQ
 
         # cast to np.arrays for indexing during training
         self.qImages = np.asarray(self.qImages)
@@ -167,9 +137,7 @@ class BaseDataset(data.Dataset):
         fmt_str += "    Number of query images: {}\n".format(len(self.qImages))
         fmt_str += "    Number of database images: {}\n".format(len(self.dbImages))
         tmp = "    Transforms (if any): "
-        fmt_str += "{0}{1}\n".format(
-            tmp, self.transform.__repr__().replace("\n", "\n" + " " * len(tmp))
-        )
+        fmt_str += "{0}{1}\n".format(tmp, self.transform.__repr__().replace("\n", "\n" + " " * len(tmp)))
         return fmt_str
 
 

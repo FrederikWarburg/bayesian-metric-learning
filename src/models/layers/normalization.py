@@ -43,19 +43,17 @@ class GlobalBatchNorm1d(nn.BatchNorm1d):
         affine=True,
         track_running_stats=True,
     ):
-        super(GlobalBatchNorm1d, self).__init__(
-            num_features, eps, momentum, affine, track_running_stats
-        )
+        super(GlobalBatchNorm1d, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
     def forward(self, input: Tensor) -> Tensor:
 
         # constrain the batchnorm layer to share same gamma and beta
-        self._parameters["weight"] = torch.ones_like(
-            self._parameters["weight"]
-        ) * self._parameters["weight"].mean(dim=0, keepdim=True)
-        self._parameters["bias"] = torch.ones_like(
-            self._parameters["bias"]
-        ) * self._parameters["bias"].mean(dim=0, keepdim=True)
+        self._parameters["weight"] = torch.ones_like(self._parameters["weight"]) * self._parameters["weight"].mean(
+            dim=0, keepdim=True
+        )
+        self._parameters["bias"] = torch.ones_like(self._parameters["bias"]) * self._parameters["bias"].mean(
+            dim=0, keepdim=True
+        )
 
         # exponential_average_factor is set to self.momentum
         # (when it is available) only so that it gets updated
@@ -91,9 +89,7 @@ class GlobalBatchNorm1d(nn.BatchNorm1d):
         return F.batch_norm(
             input,
             # If buffers are not to be tracked, ensure that they won't be updated
-            self.running_mean
-            if not self.training or self.track_running_stats
-            else None,
+            self.running_mean if not self.training or self.track_running_stats else None,
             self.running_var if not self.training or self.track_running_stats else None,
             self.weight,
             self.bias,

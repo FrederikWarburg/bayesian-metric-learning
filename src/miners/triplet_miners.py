@@ -26,16 +26,12 @@ class TripletMarginMiner(BaseTupleMiner):
         )
 
     def mine(self, embeddings, labels, ref_emb, ref_labels):
-        anchor_idx, positive_idx, negative_idx = lmu.get_all_triplets_indices(
-            labels, ref_labels
-        )
+        anchor_idx, positive_idx, negative_idx = lmu.get_all_triplets_indices(labels, ref_labels)
         mat = self.distance(embeddings, ref_emb)
         ap_dist = mat[anchor_idx, positive_idx]
         an_dist = mat[anchor_idx, negative_idx]
 
-        triplet_margin = (
-            ap_dist - an_dist if self.distance.is_inverted else an_dist - ap_dist
-        )
+        triplet_margin = ap_dist - an_dist if self.distance.is_inverted else an_dist - ap_dist
 
         if self.type_of_triplets == "easy":
             threshold_condition = triplet_margin > self.margin

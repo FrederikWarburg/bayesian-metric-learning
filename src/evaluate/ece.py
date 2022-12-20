@@ -90,11 +90,7 @@ def calibration_curves(targets, confidences, preds, bins=10, fill_nans=False):
         probs_in_range = confidences[mask]
         n_in_range = preds_in_range.shape[0]
 
-        range_acc = (
-            np.sum(targets_in_range == preds_in_range) / n_in_range
-            if n_in_range > 0
-            else 0
-        )
+        range_acc = np.sum(targets_in_range == preds_in_range) / n_in_range if n_in_range > 0 else 0
         range_prob = np.sum(probs_in_range) / n_in_range if n_in_range > 0 else 0
         # range_prob = (upper + lower) / 2
 
@@ -161,7 +157,5 @@ def save_data(acc, confidences, targets, bin_sizes, path, prefix):
     }
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
-    with open(
-        os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w"
-    ) as f:
+    with open(os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w") as f:
         json.dump(data, f)

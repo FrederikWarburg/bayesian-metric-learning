@@ -1,8 +1,6 @@
 import torch
 from pytorch_metric_learning.utils import common_functions as c_f
-from pytorch_metric_learning.utils.module_with_records_and_reducer import (
-    ModuleWithRecordsAndDistance,
-)
+from pytorch_metric_learning.utils.module_with_records_and_reducer import ModuleWithRecordsAndDistance
 
 
 class BaseMiner(ModuleWithRecordsAndDistance):
@@ -24,9 +22,7 @@ class BaseMiner(ModuleWithRecordsAndDistance):
         with torch.no_grad():
             # c_f.check_shapes(embeddings, labels)
             labels = c_f.to_device(labels, embeddings)
-            ref_emb, ref_labels = self.set_ref_emb(
-                embeddings, labels, ref_emb, ref_labels
-            )
+            ref_emb, ref_labels = self.set_ref_emb(embeddings, labels, ref_emb, ref_labels)
             mining_output = self.mine(embeddings, labels, ref_emb, ref_labels)
         self.output_assertion(mining_output)
         return mining_output
@@ -82,9 +78,7 @@ class TripletMarginMinerPR(BaseTupleMiner):
             "easy" is all triplets that are not in "all"
     """
 
-    def __init__(
-        self, margin=0.2, posDistThr=10, negDistThr=25, type_of_triplets="all", **kwargs
-    ):
+    def __init__(self, margin=0.2, posDistThr=10, negDistThr=25, type_of_triplets="all", **kwargs):
         super().__init__(**kwargs)
         self.margin = margin
         self.posDistThr = posDistThr
@@ -105,9 +99,7 @@ class TripletMarginMinerPR(BaseTupleMiner):
         mat = self.distance(embeddings, ref_emb)
         ap_dist = mat[anchor_idx, positive_idx]
         an_dist = mat[anchor_idx, negative_idx]
-        triplet_margin = (
-            ap_dist - an_dist if self.distance.is_inverted else an_dist - ap_dist
-        )
+        triplet_margin = ap_dist - an_dist if self.distance.is_inverted else an_dist - ap_dist
 
         if self.type_of_triplets == "easy":
             threshold_condition = triplet_margin > self.margin

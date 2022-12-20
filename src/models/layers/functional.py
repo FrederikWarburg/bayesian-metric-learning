@@ -33,9 +33,7 @@ def rmac(x, L=3, eps=1e-6):
     w = min(W, H)
 
     b = (max(H, W) - w) / (steps - 1)
-    (tmp, idx) = torch.min(
-        torch.abs(((w**2 - w * b) / w**2) - ovr), 0
-    )  # steps(idx) regions for long dimension
+    (tmp, idx) = torch.min(torch.abs(((w**2 - w * b) / w**2) - ovr), 0)  # steps(idx) regions for long dimension
 
     # region overplus per dimension
     Wd = 0
@@ -56,16 +54,12 @@ def rmac(x, L=3, eps=1e-6):
             b = 0
         else:
             b = (W - wl) / (l + Wd - 1)
-        cenW = (
-            torch.floor(wl2 + torch.Tensor(range(l - 1 + Wd + 1)) * b) - wl2
-        )  # center coordinates
+        cenW = torch.floor(wl2 + torch.Tensor(range(l - 1 + Wd + 1)) * b) - wl2  # center coordinates
         if l + Hd == 1:
             b = 0
         else:
             b = (H - wl) / (l + Hd - 1)
-        cenH = (
-            torch.floor(wl2 + torch.Tensor(range(l - 1 + Hd + 1)) * b) - wl2
-        )  # center coordinates
+        cenH = torch.floor(wl2 + torch.Tensor(range(l - 1 + Hd + 1)) * b) - wl2  # center coordinates
 
         for i_ in cenH.tolist():
             for j_ in cenW.tolist():
@@ -90,9 +84,7 @@ def roipool(x, rpool, L=3):
     w = min(W, H)
 
     b = (max(H, W) - w) / (steps - 1)
-    _, idx = torch.min(
-        torch.abs(((w**2 - w * b) / w**2) - ovr), 0
-    )  # steps(idx) regions for long dimension
+    _, idx = torch.min(torch.abs(((w**2 - w * b) / w**2) - ovr), 0)  # steps(idx) regions for long dimension
 
     # region overplus per dimension
     Wd = 0
@@ -113,16 +105,12 @@ def roipool(x, rpool, L=3):
             b = 0
         else:
             b = (W - wl) / (l + Wd - 1)
-        cenW = (
-            torch.floor(wl2 + torch.Tensor(range(l - 1 + Wd + 1)) * b).int() - wl2
-        )  # center coordinates
+        cenW = torch.floor(wl2 + torch.Tensor(range(l - 1 + Wd + 1)) * b).int() - wl2  # center coordinates
         if l + Hd == 1:
             b = 0
         else:
             b = (H - wl) / (l + Hd - 1)
-        cenH = (
-            torch.floor(wl2 + torch.Tensor(range(l - 1 + Hd + 1)) * b).int() - wl2
-        )  # center coordinates
+        cenH = torch.floor(wl2 + torch.Tensor(range(l - 1 + Hd + 1)) * b).int() - wl2  # center coordinates
 
         for i_ in cenH.tolist():
             for j_ in cenW.tolist():

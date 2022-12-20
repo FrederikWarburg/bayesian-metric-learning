@@ -55,9 +55,7 @@ class LaplacePosthocModel(Base):
         self.laplace = DiagLaplace()
 
         # register hessian. It will be overwritten when fitting model
-        hessian = torch.zeros_like(
-            parameters_to_vector(self.model.linear.parameters()), device="cuda:0"
-        )
+        hessian = torch.zeros_like(parameters_to_vector(self.model.linear.parameters()), device="cuda:0")
         self.register_buffer("hessian", hessian)
 
     def forward(self, x, n_samples=1):
@@ -138,9 +136,7 @@ class LaplacePosthocModel(Base):
                     indices_tuple[2][idx],
                 )
 
-            h = self.hessian_calculator.compute_hessian(
-                x, self.model.linear, indices_tuple
-            )
+            h = self.hessian_calculator.compute_hessian(x, self.model.linear, indices_tuple)
 
             self.hessian += h
 

@@ -7,9 +7,7 @@ class TrainDataset(data.Dataset):
     def __init__(self, root):
 
         transform = transforms.Compose([transforms.ToTensor()])
-        self.data = torchvision.datasets.FashionMNIST(
-            root, train=True, download=True, transform=transform
-        )
+        self.data = torchvision.datasets.FashionMNIST(root, train=True, download=True, transform=transform)
 
     def __len__(self):
         return self.data.__len__()
@@ -24,9 +22,7 @@ class TrainDataset(data.Dataset):
 class TestDataset(data.Dataset):
     def __init__(self, root):
         transform = transforms.Compose([transforms.ToTensor()])
-        self.data = torchvision.datasets.FashionMNIST(
-            root, train=False, download=True, transform=transform
-        )
+        self.data = torchvision.datasets.FashionMNIST(root, train=False, download=True, transform=transform)
 
     def __len__(self):
         return self.data.__len__()

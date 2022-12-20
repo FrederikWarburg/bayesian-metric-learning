@@ -81,7 +81,5 @@ def save_data(targets, z_mu, z_sigma, path, prefix):
     }
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
-    with open(
-        os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w"
-    ) as f:
+    with open(os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w") as f:
         json.dump(data, f)

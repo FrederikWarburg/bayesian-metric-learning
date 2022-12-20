@@ -3,9 +3,7 @@ import numpy as np
 from matplotlib.patches import Ellipse
 
 
-def plot_samples(
-    mu, sigma_sq, latent1=0, latent2=1, limit=100, ax=None, color="b", label=None
-):
+def plot_samples(mu, sigma_sq, latent1=0, latent2=1, limit=100, ax=None, color="b", label=None):
     if ax is None:
         _, ax = plt.subplots()
 

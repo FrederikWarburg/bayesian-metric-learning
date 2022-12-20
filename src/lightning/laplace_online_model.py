@@ -37,9 +37,7 @@ class LaplaceOnlineModel(Base):
         self.laplace = DiagLaplace()
 
         self.dataset_size = args.dataset_size
-        hessian = self.laplace.init_hessian(
-            self.dataset_size, self.model.linear, "cuda:0"
-        )
+        hessian = self.laplace.init_hessian(self.dataset_size, self.model.linear, "cuda:0")
         self.register_buffer("hessian", hessian)
 
         self.hessian_memory_factor = args.hessian_memory_factor
@@ -59,9 +57,7 @@ class LaplaceOnlineModel(Base):
                 margin=args.margin,
                 collect_stats=True,
                 distance=self.distance,
-                type_of_triplets=args.get(
-                    "type_of_triplets_hessian", "all"
-                ),  # [easy, hard, semihard, all]
+                type_of_triplets=args.get("type_of_triplets_hessian", "all"),  # [easy, hard, semihard, all]
             )
 
     def training_step(self, batch, batch_idx):
@@ -104,18 +100,14 @@ class LaplaceOnlineModel(Base):
                 # TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
                 if len(hessian_indices_tuple[0]) > self.max_pairs:
-                    idx = torch.randperm(hessian_indices_tuple[0].size(0))[
-                        : self.max_pairs
-                    ]
+                    idx = torch.randperm(hessian_indices_tuple[0].size(0))[: self.max_pairs]
                     hessian_indices_tuple = (
                         hessian_indices_tuple[0][idx],
                         hessian_indices_tuple[1][idx],
                         hessian_indices_tuple[2][idx],
                     )
 
-                h_s = self.hessian_calculator.compute_hessian(
-                    x.detach(), self.model.linear, hessian_indices_tuple
-                )
+                h_s = self.hessian_calculator.compute_hessian(x.detach(), self.model.linear, hessian_indices_tuple)
                 h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
                 hessian += h_s
 
@@ -212,8 +204,6 @@ class LaplaceOnlineModel(Base):
 
         self.log("hessian_tuple_stats/an_dist", float(self.hessian_miner.neg_pair_dist))
         self.log("hessian_tuple_stats/ap_dist", float(self.hessian_miner.pos_pair_dist))
-        self.log(
-            "hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets)
-        )
+        self.log("hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets))
 
         return indices_tuple

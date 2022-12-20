@@ -24,18 +24,8 @@ class HibCriterion(nn.Module):
             for j in range(n_samples):
                 z_j = z_samples[:, j, :]
 
-                prob_pos = (
-                    torch.sigmoid(
-                        -alpha * torch.sum((z_i[ap] - z_j[p]) ** 2, dim=1) + beta
-                    )
-                    + 1e-6
-                )
-                prob_neg = (
-                    torch.sigmoid(
-                        -alpha * torch.sum((z_i[an] - z_j[n]) ** 2, dim=1) + beta
-                    )
-                    + 1e-6
-                )
+                prob_pos = torch.sigmoid(-alpha * torch.sum((z_i[ap] - z_j[p]) ** 2, dim=1) + beta) + 1e-6
+                prob_neg = torch.sigmoid(-alpha * torch.sum((z_i[an] - z_j[n]) ** 2, dim=1) + beta) + 1e-6
 
                 # maximize the probability of positive pairs and minimize the probability of negative pairs
                 loss += -torch.log(prob_pos) - torch.log(1 - prob_neg)

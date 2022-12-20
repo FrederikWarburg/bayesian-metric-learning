@@ -12,11 +12,7 @@ from pytorch_metric_learning import distances
 
 from src.evaluate.evaluate import evaluate, evaluate_uncertainties
 from src.evaluate.ranking import compute_rank
-from src.evaluate.utils import (
-    get_pos_idx,
-    get_pos_idx_place_recognition,
-    remove_duplicates,
-)
+from src.evaluate.utils import get_pos_idx, get_pos_idx_place_recognition, remove_duplicates
 from src.losses.loss import configure_metric_loss
 from src.miners.custom_miners import TripletMarginMinerPR
 from src.miners.triplet_miners import TripletMarginMiner
@@ -167,15 +163,11 @@ class Base(pl.LightningModule):
         return o
 
     def validation_step(self, batch, batch_idx, dataloader_idx=1):
-        return self.forward_step(
-            batch, batch_idx, dataloader_idx, n_samples=self.val_n_samples
-        )
+        return self.forward_step(batch, batch_idx, dataloader_idx, n_samples=self.val_n_samples)
 
     def test_step(self, batch, batch_idx, dataloader_idx=1):
 
-        return self.forward_step(
-            batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples
-        )
+        return self.forward_step(batch, batch_idx, dataloader_idx, n_samples=self.test_n_samples)
 
     def format_outputs(self, outputs):
 
@@ -199,9 +191,7 @@ class Base(pl.LightningModule):
             utmDb = utm[database]
             idxQ = index[0, :][queries]
             idxDb = index[1, :][database]
-            z_muQ, z_muDb, utmQ, utmDb = remove_duplicates(
-                z_muQ, z_muDb, utmQ, utmDb, idxQ, idxDb
-            )
+            z_muQ, z_muDb, utmQ, utmDb = remove_duplicates(z_muQ, z_muDb, utmQ, utmDb, idxQ, idxDb)
 
             pidxs = get_pos_idx_place_recognition(utmQ, utmDb, self.negDistThr)
 
@@ -249,9 +239,7 @@ class Base(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
 
-        os.makedirs(
-            os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True
-        )
+        os.makedirs(os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True)
         metrics = self.compute_metrics(outputs, prefix=f"val/{self.global_step}/")
 
         if metrics is None:
@@ -312,9 +300,7 @@ class Base(pl.LightningModule):
         optimizer = torch.optim.RMSprop(parameters, self.args.lr, weight_decay=10e-6)
 
         lr_scheduler = {
-            "scheduler": torch.optim.lr_scheduler.ExponentialLR(
-                optimizer, gamma=math.exp(-0.01)
-            ),
+            "scheduler": torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=math.exp(-0.01)),
             "name": "exponential_lr",
         }
 

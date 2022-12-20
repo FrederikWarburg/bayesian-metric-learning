@@ -8,9 +8,7 @@ from src.models.layers.pooling import MAC, RMAC, GeM, GeMmp, SPoC
 
 
 def get_root():
-    return os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    )
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 
 def get_data_root():
@@ -150,9 +148,7 @@ def init_network(params):
     elif architecture.startswith("squeezenet"):
         features = list(net_in.features.children())
     else:
-        raise ValueError(
-            "Unsupported or unknown architecture: {}!".format(architecture)
-        )
+        raise ValueError("Unsupported or unknown architecture: {}!".format(architecture))
 
     pool = POOLING[pooling]()
 

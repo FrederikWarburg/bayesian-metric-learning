@@ -85,15 +85,12 @@ class HibModel(Base):
 
     def compute_loss(self, output, y, indices_tuple):
 
-        loss = self.criterion(
-            output["z_samples"], self.model.alpha, self.model.beta, indices_tuple
-        )
+        loss = self.criterion(output["z_samples"], self.model.alpha, self.model.beta, indices_tuple)
 
         # kl divergence
         # kl = log(sigma^2) + (1 + mu^2) / sigma^2
         kl_div = -0.5 * torch.sum(
-            torch.log(output["z_sigma"] + 1e-6)
-            + (1 + output["z_mu"] ** 2) / (output["z_sigma"] ** 2 + 1e-6)
+            torch.log(output["z_sigma"] + 1e-6) + (1 + output["z_mu"] ** 2) / (output["z_sigma"] ** 2 + 1e-6)
         )
         loss = loss + self.kl_weight * kl_div
 

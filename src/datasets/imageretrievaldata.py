@@ -3,14 +3,7 @@ from torch.utils.data import DataLoader
 
 
 class ImageRetrievalDataModule(pl.LightningDataModule):
-    def __init__(
-        self,
-        data_dir: str = "path/to/dir",
-        batch_size: int = 32,
-        workers=8,
-        dataset="mnist",
-        **args
-    ):
+    def __init__(self, data_dir: str = "path/to/dir", batch_size: int = 32, workers=8, dataset="mnist", **args):
         super().__init__()
 
         self.data_dir = data_dir

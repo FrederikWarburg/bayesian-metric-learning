@@ -15,9 +15,7 @@ class TrainDataset(data.Dataset):
                 transforms.RandomResizedCrop(227, scale=(0.08, 1)),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]
         )
         data = torchvision.datasets.LFWPeople(root, split="train", download=True)
@@ -76,15 +74,11 @@ class TestDataset(data.Dataset):
                 transforms.Resize(256),
                 transforms.CenterCrop(227),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]
         )
 
-        self.data = torchvision.datasets.LFWPeople(
-            root, split="test", download=True, transform=transform
-        )
+        self.data = torchvision.datasets.LFWPeople(root, split="test", download=True, transform=transform)
 
     def __len__(self) -> int:
         return self.data.__len__()

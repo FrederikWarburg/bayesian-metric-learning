@@ -11,14 +11,10 @@ class TrainDataset(Dataset):
 
         dataset_path = os.path.join(data_dir, "cars196")
         self.image_path = dataset_path
-        data_train = np.loadtxt(
-            os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str
-        )
+        data_train = np.loadtxt(os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str)
         names_train = [f"cars_train/{x}" for x in data_train[:, 0]]
 
-        data_test = np.loadtxt(
-            os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str
-        )
+        data_test = np.loadtxt(os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str)
         names_test = [f"cars_test/{x}" for x in data_test[:, 0]]
 
         data = np.concatenate((data_train, data_test), axis=0)
@@ -36,9 +32,7 @@ class TrainDataset(Dataset):
                 # transforms.ColorJitter(),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]
         )
 
@@ -47,9 +41,7 @@ class TrainDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        image = self.transform(
-            Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB")
-        )
+        image = self.transform(Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB"))
         label = self.labels[idx]
 
         return image, label
@@ -60,14 +52,10 @@ class TestDataset(Dataset):
 
         dataset_path = os.path.join(data_dir, "cars196")
         self.image_path = dataset_path
-        data_train = np.loadtxt(
-            os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str
-        )
+        data_train = np.loadtxt(os.path.join(dataset_path, "anno_train.csv"), delimiter=",", dtype=str)
         names_train = [f"cars_train/{x}" for x in data_train[:, 0]]
 
-        data_test = np.loadtxt(
-            os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str
-        )
+        data_test = np.loadtxt(os.path.join(dataset_path, "anno_test.csv"), delimiter=",", dtype=str)
         names_test = [f"cars_test/{x}" for x in data_test[:, 0]]
 
         data = np.concatenate((data_train, data_test), axis=0)
@@ -84,9 +72,7 @@ class TestDataset(Dataset):
                 transforms.Resize(256),
                 transforms.CenterCrop(227),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ]
         )
 
@@ -95,9 +81,7 @@ class TestDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        image = self.transform(
-            Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB")
-        )
+        image = self.transform(Image.open(os.path.join(self.image_path, self.images[idx])).convert("RGB"))
         label = self.labels[idx]
 
         return image, label

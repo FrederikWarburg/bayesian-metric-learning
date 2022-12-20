@@ -137,9 +137,7 @@ def main(
 
         if os.path.isfile(model_path):
             statedict = torch.load(model_path)
-            statedict = (
-                statedict["state_dict"] if "state_dict" in statedict else statedict
-            )
+            statedict = statedict["state_dict"] if "state_dict" in statedict else statedict
             model.load_state_dict(statedict)
         else:
             print("checkpoint not found at ")
