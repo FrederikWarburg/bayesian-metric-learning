@@ -16,6 +16,8 @@ sns.set()
 def evaluate_ece(dict, vis_path, prefix):
 
     if dict["z_samplesDb"] is not None:
+        # I don' think it makes sense for place recognition
+        # where we do not have a unique class label
         raise NotImplementedError
 
     # get samples from dict

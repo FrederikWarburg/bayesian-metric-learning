@@ -10,7 +10,7 @@ from models.layers.normalization import GlobalBatchNorm1d
 
 
 class UncertaintyModule(nn.Module):
-    def __init__(self, model):
+    def __init__(self, model, use_global_last_bn_layer=True):
         super().__init__()
 
         if hasattr(model, "pool"):
@@ -40,12 +40,14 @@ class UncertaintyModule(nn.Module):
         in_features = self.fc_mu[0].in_features
         latent_size = self.fc_mu[-2].out_features
 
+        last_bn_layer = GlobalBatchNorm1d if use_global_last_bn_layer else nn.BatchNorm1d
+
         self.fc_log_var = nn.Sequential(
             nn.Linear(in_features, latent_size),
             nn.BatchNorm1d(latent_size),
             nn.ReLU(),
             nn.Linear(latent_size, latent_size),
-            GlobalBatchNorm1d(latent_size),
+            last_bn_layer(latent_size),
         )
 
     def forward(self, x, n_samples=1):
@@ -97,7 +99,7 @@ class PfeModel(Base):
 
         # encapsolate model in an uncertainty module
         # and freeze deterministic part of model
-        self.model = UncertaintyModule(self.model)
+        self.model = UncertaintyModule(self.model, args.get("use_global_last_bn_layer", True))
 
         # overwrite criterion with pfe loss
         self.criterion = PfeCriterion()

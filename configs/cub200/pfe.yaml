@@ -20,7 +20,8 @@ lr : 0.001
 loss : "contrastive"
 margin : 1
 distance : "euclidean"
-type_of_triplets : "semihard"
+type_of_triplets : "all"
+use_global_last_bn_layer : True
 
 # data specific
 data_dir : "/home/warburg/data/"

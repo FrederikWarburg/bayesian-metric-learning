@@ -96,7 +96,8 @@ class ImageRetrievalNet(nn.Module):
         super(ImageRetrievalNet, self).__init__()
 
         self.backbone = nn.Sequential(*features)
-        self.pool = nn.Sequential(*[pool, L2Norm(), nn.Flatten()])
+        #self.pool = nn.Sequential(*[pool, L2Norm(), nn.Flatten()])
+        self.pool = nn.Sequential(*[pool, nn.Flatten()])
         self.linear = nn.Sequential(whiten, L2Norm())
 
         self.meta = meta

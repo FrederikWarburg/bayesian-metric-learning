@@ -9,39 +9,68 @@ import json
 def evaluate_ausc(dict, path, prefix):
 
     if dict["z_muDb"] is not None:
-        raise NotImplementedError
+        z_muQ = dict["z_muQ"]
+        z_muDb = dict["z_muDb"]
+        z_sigmaQ = dict["z_sigmaQ"]
+        z_sigmaDb = dict["z_sigmaDb"]
 
-    targets = dict["targets"]
-    z_mu = dict["z_muQ"]
-    z_sigma = dict["z_sigmaQ"]
+        targets = None
+        pidxs = dict["pidxs"]
+        same_source = False
+    else:
+        z_muQ = z_muDb = dict["z_muQ"]
+        z_sigmaQ = z_sigmaDb = dict["z_sigmaQ"]
+
+        targets = dict["targets"]
+        pidxs = None
+        same_source =True
+
 
     # plot sparsifcation curve
     # and compute ausc
-    ausc = plot_sparsification_curve(targets, z_mu, z_sigma, path, prefix)
+    ausc = plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source)
 
     if "val" not in path and "val" not in prefix:
-        save_data(targets, z_mu, z_sigma, path, prefix)
+
+        save_data(targets=targets, 
+                pidxs=pidxs, 
+                z_muQ=z_muQ, 
+                z_sigmaQ=z_sigmaQ, 
+                z_muDb=z_muDb, 
+                z_sigmaDb=z_sigmaDb, 
+                path=path, 
+                prefix=prefix,
+                same_source=same_source)
 
     return ausc
 
 
-def plot_sparsification_curve(targets, z_mu, z_sigma, path, prefix):
+def plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source=True):
 
     # neigh = NearestNeighbors(n_neighbors=2, metric="cosine")
-    z_mu = np.ascontiguousarray(z_mu.numpy())
+    z_muQ = np.ascontiguousarray(z_muQ.numpy())
+    z_muDb = np.ascontiguousarray(z_muDb.numpy())
 
     neigh = FaissKNeighbors(k=2)
-    neigh.fit(z_mu)
-    dist, idx = neigh.kneighbors(z_mu)
+    neigh.fit(z_muDb)
+    dist, idx = neigh.kneighbors(z_muQ)
 
     # remove itself from
-    dist = dist[:, 1]
-    idx = idx[:, 1]
+    if same_source:
+        dist = dist[:, 1]
+        idx = idx[:, 1]
+    else:
+        dist = dist[:, 0]
+        idx = idx[:, 0]
 
-    preds = targets[idx]
-    correct = (preds == targets).float()
+    if targets is not None:
+        preds = targets[idx]
+        correct = (preds == targets).float()
+    else:
+        correct = torch.from_numpy(np.stack([i in pidxs[j] for j, i in enumerate(idx)])).float()
+    
     # query variance + database variance
-    covar = (z_sigma + z_sigma[idx]).mean(dim=1)
+    covar = (z_sigmaQ + z_sigmaDb[idx]).mean(dim=1)
 
     _, indices = torch.sort(-covar)
 
@@ -70,11 +99,18 @@ def plot_sparsification_curve(targets, z_mu, z_sigma, path, prefix):
     return float(ausc)
 
 
-def save_data(targets, z_mu, z_sigma, path, prefix):
+def save_data(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source):
 
-    data = {"targets" : targets.tolist(), 
-            "z_mu" : z_mu.tolist(),
-            "z_sigma" : z_sigma.tolist()}
+    if same_source:
+        data = {"targets" : targets.tolist(), 
+                "z_mu" : z_muQ.tolist(),
+                "z_sigma" : z_sigmaQ.tolist()}
+    else:
+        data = {"pidxs" : [p.tolist() for p in pidxs],
+                "z_muQ" : z_muQ.tolist(),
+                "z_sigmaQ" : z_sigmaQ.tolist(),
+                "z_muDb" : z_muDb.tolist(),
+                "z_sigmaDb" : z_sigmaDb.tolist()}
 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w") as f:

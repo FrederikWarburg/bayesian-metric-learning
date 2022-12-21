@@ -54,4 +54,4 @@ def remove_duplicates(z_muQ, z_muDb, utmQ, utmDb, idxQ, idxDb):
     utmQ = utmQ[q_index]
     utmDb = utmDb[db_index]
 
-    return z_muQ, z_muDb, utmQ, utmDb
+    return z_muQ, z_muDb, utmQ, utmDb, q_index, db_index

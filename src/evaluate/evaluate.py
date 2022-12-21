@@ -28,11 +28,11 @@ def evaluate_uncertainties(dict_in, dict_ood, vis_path, prefix):
         auroc, auprc = evaluate_ood(dict_in, dict_ood, vis_path, prefix)
         metrics["auroc"] = auroc
         metrics["auprc"] = auprc
-
+    
     # evaluate ece
-    ece = evaluate_ece(dict_in, vis_path, prefix)
-    # evaluate_ece(dict_ood, vis_path, prefix)
-    metrics["ece"] = ece
+    if dict_in["z_samplesDb"] is None:
+        ece = evaluate_ece(dict_in, vis_path, prefix)
+        metrics["ece"] = ece
 
     # evaluate ausc
     ausc = evaluate_ausc(dict_in, vis_path, prefix)

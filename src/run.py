@@ -23,7 +23,6 @@ from lightning.mcdropout_model import MCDropoutModel
 from lightning.deep_ensemble_model import DeepEnsembleModel
 from lightning.hib_model import HibModel
 
-
 def parse_args():
 
     parser = argparse.ArgumentParser()
@@ -71,7 +70,7 @@ def main(
     # more standard image retrieval, where we have descrete labels.
     if config.dataset in ("msls", "dag"):
         data_module = PlaceRecognitionDataModule(**config.toDict())
-    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw"):
+    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw", "cifar10"):
         data_module = ImageRetrievalDataModule(**config.toDict())
     else:
         raise NotImplementedError(f"Dataset {config.dataset} not implemented")
@@ -145,6 +144,14 @@ def main(
             loguru_logger.info(f"Start training!")
             trainer.fit(model, datamodule=data_module)
 
+    if config.get("optimize_prior_prec", False):
+        print("==> optimize prior precision")
+        prior_prec = config.get("prior_prec", 1)
+        if prior_prec == 1:
+            model.optimize_prior_precision()
+        else:
+            model.prior_prec = prior_prec
+    
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)
 

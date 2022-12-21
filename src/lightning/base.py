@@ -39,29 +39,35 @@ class Base(pl.LightningModule):
 
         print("==> test n_samples: ", self.test_n_samples)
 
+        distance = args.get("distance", "euclidean")
+        margin = args.get("margin", 0.7)
+        loss = args.get("loss", "contrastive")
+        type_of_triplets = args.get("type_of_triplets", "semihard")
+
         ### pytorch-metric-learning stuff ###
-        if args.distance == "cosine":
+        if distance == "cosine":
             self.distance = distances.CosineSimilarity()
-        elif args.distance == "euclidean":
+        elif distance == "euclidean":
             self.distance = distances.LpDistance()
 
-        self.criterion = configure_metric_loss(args.loss, args.distance, args.margin)
+        self.criterion = configure_metric_loss(loss, distance, margin)
 
         self.place_rec = args.dataset in ("dag", "msls")
         self.face_rec = args.dataset in ("lfw")
         self.savepath = os.path.join(savepath, "results")
 
         if self.place_rec:
-            self.miner = TripletMarginMinerPR(
-                margin=args.margin,
-                collect_stats=True,
-                type_of_triplets=args.type_of_triplets,
-                posDistThr=args.get("posDistThr", 10),
-                negDistThr=args.get("negDistThr", 25),
-                distance=self.distance,
-            )
             self.posDistThr = args.get("posDistThr", 10)
             self.negDistThr = args.get("negDistThr", 25)
+
+            self.miner = TripletMarginMinerPR(
+                margin=margin,
+                collect_stats=True,
+                type_of_triplets=type_of_triplets,
+                posDistThr=self.posDistThr,
+                negDistThr=self.negDistThr,
+                distance=self.distance,
+            )
         else:
             self.miner = TripletMarginMiner(
                 margin=args.margin,
@@ -203,7 +209,7 @@ class Base(pl.LightningModule):
             utmDb = utm[database]
             idxQ = index[0, :][queries]
             idxDb = index[1, :][database]
-            z_muQ, z_muDb, utmQ, utmDb = remove_duplicates(
+            z_muQ, z_muDb, utmQ, utmDb, q_index, db_index = remove_duplicates(
                 z_muQ, z_muDb, utmQ, utmDb, idxQ, idxDb
             )
 
@@ -221,12 +227,18 @@ class Base(pl.LightningModule):
             if z_muDb is None:
                 # merge dicts
                 o = {**o, **{"z_sigmaQ": z_sigma, "z_sigmaDb": None}}
+            else:
+                o["z_sigmaQ"] = z_sigma[queries][q_index]
+                o["z_sigmaDb"] = z_sigma[database][db_index]
 
         if "z_samples" in outputs[0]:
             z_samples = torch.cat([o["z_samples"] for o in outputs])
             if z_muDb is None:
                 # merge dicts
                 o = {**o, **{"z_samplesQ": z_samples, "z_samplesDb": None}}
+            else:
+                o["z_samplesQ"] = z_samples[queries][q_index]
+                o["z_samplesDb"] = z_samples[database][db_index]
 
         return o
 
@@ -244,7 +256,7 @@ class Base(pl.LightningModule):
 
         ranks = compute_rank(id["z_muQ"], id["z_muDb"])
         metrics = evaluate(ranks, id["pidxs"])
-
+        
         if "z_sigmaQ" in id:
             uncertainty_metrics = evaluate_uncertainties(id, ood, self.savepath, prefix)
             metrics = {**metrics, **uncertainty_metrics}
@@ -270,6 +282,10 @@ class Base(pl.LightningModule):
         for key in metrics:
             if key not in ("map", "recall"):
                 self.log(f"val_metric/{key}", metrics[key])
+
+        # if la remove the sampled weights at the end of the validation
+        if hasattr(self, "nn_weight_samples"):
+            self.nn_weight_samples = None
 
     def test_epoch_end(self, outputs):
 
@@ -307,6 +323,10 @@ class Base(pl.LightningModule):
                         f.write("%s\n" % (metrics[key][i]))
                 else:
                     f.write("%s\n" % (metrics[key]))
+
+        # if la remove the sampled weights at the end of the validation
+        if hasattr(self, "nn_weight_samples"):
+            self.nn_weight_samples = None
 
     def configure_optimizers(self):
 

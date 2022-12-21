@@ -7,13 +7,13 @@ import sys
 sys.path.append("../stochman")
 from stochman import nnj
 from stochman import ContrastiveHessianCalculator, ArccosHessianCalculator
-from stochman.laplace import DiagLaplace
+from stochman.laplace import DiagLaplace, optimize_prior_precision
 from stochman.utils import convert_to_stochman
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 from tqdm import tqdm
 
 import torch
-
+import matplotlib.pyplot as plt
 
 hessian_calculators = {
     "contrastive": ContrastiveHessianCalculator,
@@ -31,7 +31,7 @@ class LaplacePosthocModel(Base):
     def __init__(self, args, savepath, seed):
         super().__init__(args, savepath, seed)
 
-        self.max_pairs = args.max_pairs
+        self.max_pairs = args.get("max_pairs", 5000)
 
         # load model checkpoint
         resume = os.path.join(args.resume, str(seed), "checkpoints/best.ckpt")
@@ -43,21 +43,25 @@ class LaplacePosthocModel(Base):
 
         # load model parameters
         self.model.load_state_dict(rename_keys(torch.load(resume)["state_dict"]))
+        loss = args.get("loss", "contrastive")
+        loss_approx = args.get("loss_approx", "full")
 
-        self.hessian_calculator = hessian_calculators[args.loss](
+        self.hessian_calculator = hessian_calculators[loss](
             wrt="weight",
             shape="diagonal",
             speed="half",
-            method=args.loss_approx,
+            method=loss_approx,
         )
 
         # if arccos, then remove normalization layer from model
-        if self.args.loss == "arccos":
+        if loss == "arccos":
             self.model.linear = convert_to_stochman(self.model.linear[:-1])
         else:
             self.model.linear = convert_to_stochman(self.model.linear)
 
         self.laplace = DiagLaplace()
+        prior_prec = torch.tensor(1.0)
+        self.register_buffer("prior_prec", prior_prec)
 
         # register hessian. It will be overwritten when fitting model
         hessian = torch.zeros_like(parameters_to_vector(self.model.linear.parameters()), device="cuda:0")
@@ -69,26 +73,19 @@ class LaplacePosthocModel(Base):
         if hasattr(self.model, "pool"):
             x = self.model.pool(x)
 
-        if not hasattr(self, "hessian"):
-            print("==> no hessian found!")
-            z = self.model.linear(x)
-            return {"z_mu": z}
-
-        # get mean and std of posterior
-        mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
-        self.hessian = torch.relu(self.hessian)
-        sigma_q = self.laplace.posterior_scale(self.hessian)
-
-        # draw samples
-        samples = self.laplace.sample(mu_q, sigma_q, n_samples)
+        # get mean parameters
+        mu_q = parameters_to_vector(self.model.linear.parameters()).cuda()
 
         # forward n times
         zs = []
-        for net_sample in samples:
+        for i in range(n_samples):
+
+            # use sample i that was generated in beginning of evaluation
+            net_sample = self.nn_weight_samples[i]
 
             # replace the network parameters with the sampled parameters
             vector_to_parameters(net_sample, self.model.linear.parameters())
-
+            
             z = self.model.linear(x)
 
             # ensure that we are on unit sphere
@@ -150,3 +147,31 @@ class LaplacePosthocModel(Base):
         savepath = f"{self.savepath.replace('/results', '')}/checkpoints"
         os.makedirs(savepath, exist_ok=True)
         torch.save(self.state_dict(), savepath + "/best.ckpt")
+
+    def sample(self, n_samples):
+
+        if not hasattr(self, "hessian"):
+            print("==> no hessian found!")
+            sys.exit()
+
+        # get mean and std of posterior
+        mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
+        self.hessian = torch.relu(self.hessian)
+        sigma_q = self.laplace.posterior_scale(self.hessian, prior_prec=self.prior_prec)
+
+        # draw samples
+        self.nn_weight_samples = self.laplace.sample(mu_q, sigma_q, n_samples)
+
+    def on_validation_epoch_start(self):
+        self.sample(self.n_val_samples)
+
+    def on_test_epoch_start(self):
+        self.sample(self.n_test_samples)
+
+    def optimize_prior_precision(self):
+        
+        mu_q = parameters_to_vector(self.model.linear.parameters()).cuda()
+        hessian = torch.relu(self.hessian).cuda()
+        prior_prec = torch.ones(1, device=mu_q.device).cuda()
+        self.prior_prec = optimize_prior_precision(mu_q, hessian, prior_prec, 1)
+

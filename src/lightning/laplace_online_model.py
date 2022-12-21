@@ -150,15 +150,13 @@ class LaplaceOnlineModel(Base):
 
         # get mean and std of posterior
         mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
-        self.hessian = torch.relu(self.hessian)
-        sigma_q = self.laplace.posterior_scale(self.hessian)
-
-        # draw samples
-        samples = self.laplace.sample(mu_q, sigma_q, n_samples)
 
         # forward n times
         zs = []
-        for net_sample in samples:
+        for i in range(n_samples):
+
+            # use sample i that was generated in beginning of evaluation
+            net_sample = self.nn_weight_samples[i]
 
             # replace the network parameters with the sampled parameters
             vector_to_parameters(net_sample, self.model.linear.parameters())
@@ -219,3 +217,23 @@ class LaplaceOnlineModel(Base):
         self.log("hessian_tuple_stats/n_triplets", float(self.hessian_miner.num_triplets))
 
         return indices_tuple
+
+    def sample(self, n_samples):
+
+        if not hasattr(self, "hessian"):
+            print("==> no hessian found!")
+            sys.exit()
+
+        # get mean and std of posterior
+        mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
+        self.hessian = torch.relu(self.hessian)
+        sigma_q = self.laplace.posterior_scale(self.hessian, prior_prec=self.prior_prec)
+
+        # draw samples
+        self.nn_weight_samples = self.laplace.sample(mu_q, sigma_q, n_samples)
+
+    def on_validation_epoch_start(self):
+        self.sample(self.n_val_samples)
+
+    def on_test_epoch_start(self):
+        self.sample(self.n_test_samples)

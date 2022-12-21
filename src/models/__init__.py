@@ -1,5 +1,6 @@
 from models.networks.imageretrievalnet import init_network
 from models.networks.mnistmodel import MnistLinearNet
+from models.networks.cifar10 import Cifar10Net
 
 
 def configure_model(args):
@@ -10,6 +11,8 @@ def configure_model(args):
     dropout_rate = args.get("dropout_rate", 0.0)
     if args.dataset in ("mnist", "fashionmnist"):
         model = MnistLinearNet(args.latent_dim, dropout_rate)
+    elif args.dataset == "cifar10":
+        model = Cifar10Net(args.latent_dim, dropout_rate)
     else:
         if args.pretrained:
             print(">> Using pre-trained model '{}'".format(args.arch))

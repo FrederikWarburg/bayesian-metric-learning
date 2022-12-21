@@ -2,26 +2,25 @@
 
 
 # model specific
-model : "pfe"
-resume : "../lightning_logs/fashionmnist/deterministic"
+model : "deep_ensemble"
+resume : "../lightning_logs/cifar10/deterministic"
 arch : "linear"
-latent_dim : 3
-
+latent_dim : 16
+seeds : [1,2,3,4,5]
 
 # logging
 check_val_every_n_epoch: 1
 
 # training
-train : True
-epochs : 20
+train : False
+epochs : 0
 lr : 0.001
 loss : "contrastive"
 margin : 0.7
 distance : "euclidean"
-type_of_triplets : "all"
 
 # data specific
 data_dir : "/home/warburg/data/"
-dataset : "fashionmnist"
+dataset : "cifar10"
 batch_size : 256
-split_query_database : False
+split_quesry_database : False
