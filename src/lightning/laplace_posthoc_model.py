@@ -163,10 +163,10 @@ class LaplacePosthocModel(Base):
         self.nn_weight_samples = self.laplace.sample(mu_q, sigma_q, n_samples)
 
     def on_validation_epoch_start(self):
-        self.sample(self.n_val_samples)
+        self.sample(self.val_n_samples)
 
     def on_test_epoch_start(self):
-        self.sample(self.n_test_samples)
+        self.sample(self.test_n_samples)
 
     def optimize_prior_precision(self):
         
