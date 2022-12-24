@@ -45,10 +45,11 @@ class LaplaceOnlineModel(Base):
         self.laplace = DiagLaplace()
 
         self.dataset_size = args.dataset_size
-        hessian = self.laplace.init_hessian(
+        self.hessian = self.laplace.init_hessian(
             self.dataset_size, self.model.linear, "cuda:0"
         )
-        self.register_buffer("hessian", hessian)
+        self.register_buffer("hessian_self", self.hessian)
+        self.prior_prec = torch.tensor(1, device=self.hessian.device)
 
         self.hessian_memory_factor = args.hessian_memory_factor
 
