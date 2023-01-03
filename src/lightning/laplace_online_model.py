@@ -120,7 +120,7 @@ class LaplaceOnlineModel(Base):
                 h_s = self.hessian_calculator.compute_hessian(
                     x.detach(), self.model.linear, hessian_indices_tuple
                 )
-                h_s = self.laplace.scale(h_s, x.shape[0], self.dataset_size)
+                h_s = self.laplace.scale(h_s, min(len(hessian_indices_tuple[0]), self.max_pairs), self.dataset_size**2)
                 hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
@@ -227,7 +227,7 @@ class LaplaceOnlineModel(Base):
         # get mean and std of posterior
         mu_q = parameters_to_vector(self.model.linear.parameters()).unsqueeze(1)
         self.hessian = torch.relu(self.hessian)
-        sigma_q = self.laplace.posterior_scale(self.hessian, prior_prec=self.prior_prec)
+        sigma_q = self.laplace.posterior_scale(self.hessian)
 
         # draw samples
         self.nn_weight_samples = self.laplace.sample(mu_q, sigma_q, n_samples)

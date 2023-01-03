@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CONFIG_PATHS=("deterministic" \
-             "pfe" \
+CONFIG_PATHS=(#"deterministic" \
+             #"pfe" \
             "laplace_posthoc_fix" \
             "laplace_posthoc_full" \ 
             "laplace_posthoc_pos" \

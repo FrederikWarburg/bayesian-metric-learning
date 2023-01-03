@@ -55,7 +55,7 @@ class Cifar10Net(nn.Module):
             
             print("Using dropout rate: {}".format(dropout_rate))
             self.backbone = nn.Sequential(
-                nn.Conv2d(1, 32, 3, 1),
+                nn.Conv2d(3, 32, 3, 1),
                 nn.ReLU(),
                 nn.MaxPool2d(2),
                 nn.Dropout2d(dropout_rate),

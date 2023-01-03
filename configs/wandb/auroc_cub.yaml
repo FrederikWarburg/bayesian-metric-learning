@@ -2,17 +2,17 @@ program: sweep.py
 method: bayes
 name: "cub200_auroc_sweep"
 metric:
-  name: test_metric/auroc
+  name: test_map/map@5
   goal: maximize
 parameters:
   hessian_memory_factor:
-    min: 0.99
-    max: 0.999
+    min: 0.999
+    max: 0.9999999
   type_of_triplets:
-    value: "hard"
+    values: ["hard", "semihard", "all"]
   type_of_triplets_hessian:
     values: ["hard", "semihard", "all"]
   max_pairs:
-    value: 30
+    values: [5, 30]
   config: 
-    value: '../configs/cub200/laplace_online_arccos_pos.yaml'
+    value: '../configs/cub200/laplace_online_arccos_fix.yaml'
