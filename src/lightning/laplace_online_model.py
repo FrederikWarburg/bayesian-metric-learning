@@ -46,13 +46,16 @@ class LaplaceOnlineModel(Base):
 
         self.dataset_size = args.dataset_size
         hessian = self.laplace.init_hessian(
-            self.dataset_size, self.model.linear, "cuda:0"
+            args.get("init_hessian", self.dataset_size), self.model.linear, "cuda:0"
         )
         self.register_buffer("hessian", hessian)
         self.prior_prec = torch.tensor(1, device="cuda:0")
 
+        #self.n_step_without_hessian_update = args.get("n_step_without_hessian_update", 0)
+        #self.n_step_to_introduce_hessian = args.get("n_step_to_introduce_hessian", 0)
+        #self.hessian_step_counter = 0
         self.hessian_memory_factor = args.hessian_memory_factor
-
+        
         # hessian miners
         if self.place_rec:
             self.hessian_miner = TripletMarginMinerPR(
@@ -70,6 +73,26 @@ class LaplaceOnlineModel(Base):
                 distance=self.distance,
                 type_of_triplets=args.get("type_of_triplets_hessian", "all"),  # [easy, hard, semihard, all]
             )
+
+    """
+    def on_train_batch_start(self, batch, batch_idx):
+        
+        if self.hessian_step_counter < self.n_step_without_hessian_update:
+            # do not update the hessian
+            self.hessian_memory_factor = 1
+
+        elif self.hessian_step_counter < self.n_step_to_introduce_hessian:
+            # slowly decrease memory factor
+            steps_to_introduce_hessian = self.n_step_to_introduce_hessian - self.n_step_without_hessian_update
+            step = self.hessian_step_counter - self.n_step_without_hessian_update 
+            weight = 1 - (steps_to_introduce_hessian - step) / steps_to_introduce_hessian 
+            self.hessian_memory_factor = weight * self.args.hessian_memory_factor + (1 - weight) * 1
+        
+        self.hessian_step_counter += 1
+        
+        wandb.log({"extra/hessian_memory_factor": self.hessian_memory_factor})
+        wandb.log({"extra/hessian_step_counter": self.hessian_step_counter})
+    """
 
     def training_step(self, batch, batch_idx):
 
@@ -110,7 +133,8 @@ class LaplaceOnlineModel(Base):
                 # randomly choose 5000 pairs if more than 5000 pairs available.
                 # TODO: decide what to do. What pairs should we use to compute the hessian over?
                 # does it matter? What experiments should we run to get a better idea?
-                if len(hessian_indices_tuple[0]) > self.max_pairs:
+                n_triplets = len(hessian_indices_tuple[0])
+                if n_triplets > self.max_pairs:
                     idx = torch.randperm(hessian_indices_tuple[0].size(0))[: self.max_pairs]
                     hessian_indices_tuple = (
                         hessian_indices_tuple[0][idx],
@@ -121,7 +145,7 @@ class LaplaceOnlineModel(Base):
                 h_s = self.hessian_calculator.compute_hessian(
                     x.detach(), self.model.linear, hessian_indices_tuple
                 )
-                h_s = self.laplace.scale(h_s, min(len(hessian_indices_tuple[0]), self.max_pairs), self.dataset_size**2)
+                h_s = self.laplace.scale(h_s, min(n_triplets, self.max_pairs), self.dataset_size**2)
                 hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
