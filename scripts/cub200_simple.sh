@@ -10,19 +10,21 @@ CONFIG_PATHS=(#"deterministic" \
             "laplace_online_pos" \
             "laplace_posthoc_arccos_full" \
             "laplace_posthoc_arccos_pos" \
+            "laplace_posthoc_arccos_fix" \
             "laplace_online_arccos_full" \
+            "laplace_online_arccos_fix" \
             "laplace_online_arccos_pos" \
             "mcdrop" \
             "hib" \
             )
 
-#CONFIG_PATHS=("pfe")
+CONFIG_PATHS=("laplace_posthoc_arccos_fix")
 
 for f in ${CONFIG_PATHS[@]}
 do
     for seed in {1..5}
     do
-        CUDA_VISIBLE_DEVICES=1 python run.py --config "../configs/cub200/$f.yaml" --seed $seed
+        CUDA_VISIBLE_DEVICES=$seed python run.py --config "../configs/cub200/$f.yaml" --seed $seed &
     done
 done
 

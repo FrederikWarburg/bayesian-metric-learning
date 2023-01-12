@@ -188,7 +188,7 @@ class Base(pl.LightningModule):
         )
 
     def format_outputs(self, outputs):
-
+        
         z_mu = torch.cat([o["z_mu"] for o in outputs])
         if not self.place_rec:
             targets = torch.cat([o["label"] for o in outputs])

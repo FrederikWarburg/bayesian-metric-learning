@@ -2,7 +2,7 @@ program: sweep.py
 method: bayes
 name: "cub200_auroc_sweep"
 metric:
-  name: test_map/map@5
+  name: test_metric/auroc
   goal: maximize
 parameters:
   hessian_memory_factor:
