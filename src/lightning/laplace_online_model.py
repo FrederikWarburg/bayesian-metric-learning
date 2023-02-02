@@ -48,6 +48,7 @@ class LaplaceOnlineModel(Base):
         hessian = self.laplace.init_hessian(
             args.get("init_hessian", self.dataset_size), self.model.linear, "cuda:0"
         )
+        self.scale_hs =  args.get("scale_hessian", self.dataset_size ** 2)
         self.register_buffer("hessian", hessian)
         self.prior_prec = torch.tensor(1, device="cuda:0")
 
@@ -145,7 +146,7 @@ class LaplaceOnlineModel(Base):
                 h_s = self.hessian_calculator.compute_hessian(
                     x.detach(), self.model.linear, hessian_indices_tuple
                 )
-                h_s = self.laplace.scale(h_s, min(n_triplets, self.max_pairs), self.dataset_size**2)
+                h_s = self.laplace.scale(h_s, min(n_triplets, self.max_pairs), self.scale_hs)
                 hessian += h_s
 
         # reset the network parameters with the mean parameter (MAP estimate parameters)
@@ -153,22 +154,29 @@ class LaplaceOnlineModel(Base):
         loss = loss / self.train_n_samples
         hessian = hessian / self.train_n_samples
 
-        self.hessian = self.hessian_memory_factor * self.hessian + hessian
+        self.hessian = self.hessian_memory_factor * self.hessian + torch.relu(hessian)
 
         # add images to tensorboard every epoch
         if self.current_epoch == self.counter:
             if self.current_epoch < 5:
-                self.log_triplets(im, indices_tuple)
+                pass
+                # self.log_triplets(im, indices_tuple)
             self.counter += 1
 
         # log hessian and sigma_q
         wandb.log({"extra/hessian" : self.hessian.sum()})
+        wandb.log({"extra/hessian_mean" : self.hessian.mean()})
+        wandb.log({"extra/hessian_min" : self.hessian.min()})
+        wandb.log({"extra/hessian_max" : self.hessian.max()})
         wandb.log({"extra/sigma_q" : sigma_q.sum()})
+        wandb.log({"extra/sigma_q_mean" : sigma_q.mean()})
+        wandb.log({"extra/sigma_q_min" : sigma_q.min()})
+        wandb.log({"extra/sigma_q_max" : sigma_q.max()})
 
         return loss
 
     def forward(self, x, n_samples=1):
-
+        
         x = self.model.backbone(x)
         if hasattr(self.model, "pool"):
             x = self.model.pool(x)

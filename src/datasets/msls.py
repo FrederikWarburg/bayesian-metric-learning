@@ -14,7 +14,7 @@ default_cities = {
         "zurich",
         "london",
         "boston",
-        "melbourne",
+#        "melbourne",
         "amsterdam",
         "helsinki",
         "tokyo",
@@ -88,9 +88,6 @@ class BaseDataset(data.Dataset):
         self.name = name
         self.exclude_panos = True
         self.mode = mode
-
-        # other
-        self.transform = transform
 
         # load data
         for city in self.cities:
@@ -255,10 +252,24 @@ class TrainDataset(BaseDataset):
 
     def __getitem__(self, index):
 
+        if index >= len(self.qidxs):
+            raise IndexError("index {} is out of range qidx".format(index))
+        if index >= len(self.pidxs):
+            raise IndexError("index {} is out of range pidx".format(index))
+
         qidx = self.qidxs[index]
         pidx = self.pidxs[index]
 
         pidx = np.random.choice(pidx, 1)[0]
+
+        if qidx >= len(self.qImages):
+            raise IndexError("index {} is out of range qImages".format(qidx))
+        if pidx >= len(self.dbImages):
+            raise IndexError("index {} is out of range dbImages".format(pidx))
+        if qidx >= len(self.utmQ):
+            raise IndexError("index {} is out of range utmQ".format(qidx))
+        if pidx >= len(self.utmDb):
+            raise IndexError("index {} is out of range utmDb".format(pidx))
 
         qpath, utmQ = self.qImages[qidx], self.utmQ[qidx]
         ppath, utmDb = self.dbImages[pidx], self.utmDb[pidx]
@@ -276,6 +287,11 @@ class TrainDataset(BaseDataset):
 
         if self.transform is not None:
             output = [self.transform(output[i]) for i in range(len(output))]
+
+        if len(target) != 2:
+            raise ValueError("target should have 2 elements")
+        if len(output) != 2:
+            raise ValueError("output should have 2 elements")
 
         return output, target
 
@@ -312,10 +328,23 @@ class TestDataset(BaseDataset):
     def __getitem__(self, index):
 
         if index < len(self.qidxs):
+
+            if index >= len(self.qidxs):
+                raise IndexError("index {} is out of range qidxs".format(index))
+            if self.qidxs[index] >= len(self.qImages):
+                raise IndexError("index {} is out of range qImages".format(index))
+            if self.qidxs[index] >= len(self.utmQ):
+                raise IndexError("index {} is out of range utmQ".format(index))
+
             path = self.qImages[self.qidxs[index]]
             utm = self.utmQ[self.qidxs[index]]
             index = [index, -1]
         else:
+            if index - len(self.qidxs) >= len(self.dbImages):
+                raise IndexError("index {} is out of range dbImages".format(index))
+            if index - len(self.qidxs) >= len(self.utmDb):
+                raise IndexError("index {} is out of range utmDb".format(index))
+
             path = self.dbImages[index - len(self.qidxs)]
             utm = self.utmDb[index - len(self.qidxs)]
             index = [-1, index - len(self.qidxs)]

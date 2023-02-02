@@ -34,6 +34,7 @@ def parse_args():
     )
     parser.add_argument("--seed", default=42, type=int, help="seed")
     parser.add_argument("--validate-only", action='store_true', help="only validate")
+    parser.add_argument("--resume_from_checkpoint", default=None, type=str, help="resume from checkpoint")
     args = parser.parse_args()
     config_path = args.config
 
@@ -87,7 +88,7 @@ def main(
 
     # setup logger
     os.makedirs("../logs", exist_ok=True)
-    logger = WandbLogger(save_dir=f"../logs", name=name)
+    logger = WandbLogger(save_dir=f"../logs", name=name, entity="laplace-metric-learning")
 
     # lightning trainer
     checkpoint_callback = ModelCheckpoint(
@@ -116,6 +117,7 @@ def main(
         devices=torch.cuda.device_count(),
         check_val_every_n_epoch=config.check_val_every_n_epoch,
         logger=logger,
+        resume_from_checkpoint=args.resume_from_checkpoint,
         # plugins=DDPPlugin(find_unused_parameters=False),
         callbacks=callbacks,
     )
@@ -150,7 +152,7 @@ def main(
         if prior_prec == 1:
             model.optimize_prior_precision()
         else:
-            model.prior_prec = prior_prec
+            model.prior_prec = torch.tensor(prior_prec).to(model.device)
     
     loguru_logger.info(f"Start testing!")
     trainer.test(model, datamodule=data_module)

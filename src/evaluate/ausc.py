@@ -28,19 +28,19 @@ def evaluate_ausc(dict, path, prefix):
 
     # plot sparsifcation curve
     # and compute ausc
-    ausc = plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source)
+    ausc, accuracies = plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source)
+    save_data(accuracies, path, prefix)
 
-    if "val" not in path and "val" not in prefix:
-
-        save_data(targets=targets, 
-                pidxs=pidxs, 
-                z_muQ=z_muQ, 
-                z_sigmaQ=z_sigmaQ, 
-                z_muDb=z_muDb, 
-                z_sigmaDb=z_sigmaDb, 
-                path=path, 
-                prefix=prefix,
-                same_source=same_source)
+    #if "val" not in path and "val" not in prefix:   
+        #save_data(targets=targets, 
+        #        pidxs=pidxs, 
+        #        z_muQ=z_muQ, 
+        #        z_sigmaQ=z_sigmaQ, 
+        #        z_muDb=z_muDb, 
+        #        z_sigmaDb=z_sigmaDb, 
+        #        path=path, 
+        #        prefix=prefix,
+        #        same_source=same_source)
 
     return ausc
 
@@ -96,9 +96,9 @@ def plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb
     # Save figure
     fig.savefig(os.path.join(path, f"{prefix}sparsification_curve.png"))
 
-    return float(ausc)
+    return float(ausc), accuracies
 
-
+"""
 def save_data(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, same_source):
 
     if same_source:
@@ -115,3 +115,11 @@ def save_data(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb, path, prefix, 
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}sparsification_curve.json"), "w") as f:
         json.dump(data, f)
+"""
+
+def save_data(accuracies, path, prefix):
+    
+    accuracies = {"acc" : accuracies.tolist()}
+    os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
+    with open(os.path.join(path, "figure_data", f"{prefix}acc.json"), "w") as f:
+        json.dump(accuracies, f)

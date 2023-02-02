@@ -74,7 +74,7 @@ class LaplacePosthocModel(Base):
             x = self.model.pool(x)
 
         # get mean parameters
-        mu_q = parameters_to_vector(self.model.linear.parameters()).cuda()
+        mu_q = parameters_to_vector(self.model.linear.parameters())
 
         # forward n times
         zs = []

@@ -1,0 +1,32 @@
+# model specific
+model : "laplace_posthoc"
+arch : "resnet50"
+pool : "gem"
+whitening : True
+resume : "../lightning_logs/msls/deterministic"
+latent_dim : 512
+optimize_prior_prec : True
+prior_prec : 1.0
+
+# hessian
+loss_approx : "fix"
+max_pairs : 10
+type_of_triplets : "all" # easy, semihard, hard, all
+
+# logging
+check_val_every_n_epoch: 1
+
+# training
+train : True
+epochs : 20
+lr : 3.0e-7
+loss : "arccos"
+margin : 0.1
+distance : "euclidean"
+
+# data specific
+data_dir : "/home/warburg/data/"
+dataset : "msls"
+batch_size : 64
+split_query_database : False
+

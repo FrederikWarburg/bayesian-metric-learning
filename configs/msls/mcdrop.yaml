@@ -1,0 +1,32 @@
+
+
+
+# model specific
+model : "mc_dropout"
+resume : ""
+arch : "resnet50"
+pool : "gem"
+whitening : True
+pretrained : True
+latent_dim : 512
+dropout_rate : 0.05
+
+# logging
+check_val_every_n_epoch: 1
+
+# training
+train : True
+epochs : 30
+lr : 1.0e-7
+loss : "contrastive"
+margin : 0.1
+distance : "euclidean"
+type_of_triplets : "all"
+
+# data specific
+data_dir : "/home/warburg/data/"
+dataset : "msls"
+batch_size : 64
+split_query_database : False
+negDistThr : 25
+posDistThr : 10

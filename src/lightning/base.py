@@ -333,7 +333,8 @@ class Base(pl.LightningModule):
         parameters = get_model_parameters(self.model, self.args)
 
         # define optimizer
-        optimizer = torch.optim.RMSprop(parameters, self.args.lr, weight_decay=10e-6)
+        # optimizer = torch.optim.Adam(parameters, self.args.lr, weight_decay=self.args.get("weight_decay", 10e-6))
+        optimizer = torch.optim.RMSprop(parameters, self.args.lr, weight_decay=self.args.get("weight_decay", 10e-6))
 
         lr_scheduler = {
             "scheduler": torch.optim.lr_scheduler.ExponentialLR(
