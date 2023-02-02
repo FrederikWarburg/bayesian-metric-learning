@@ -6,7 +6,7 @@ lightning_logs/
 logs/
 bsub_logs/
 results/
-notebooks/
+# notebooks/
 data/
 metric_learning/
 .env
