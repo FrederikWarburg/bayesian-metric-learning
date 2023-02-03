@@ -4,6 +4,8 @@
 
 :fire: **tl;dr:** We use the Laplace Approximation for the Contrastive Loss to optimize a latent space with Metric Learning.
 
+:newspaper: **paper:** https://arxiv.org/abs/2302.01332
+
 <p align="center">
   <img src="img/teaser.png" />
 </p>
