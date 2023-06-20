@@ -20,6 +20,7 @@ git clone https://github.com/FrederikWarburg/bayesian-metric-learning;
 cd bayesian-metric-learning;
 git clone https://github.com/IlMioFrizzantinoAmabile/stochman;
 cd stochman;
+git checkout 1d285ae;
 python setup.py develop;
 cd ../src;
 ```
