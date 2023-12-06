@@ -268,7 +268,7 @@ class Base(pl.LightningModule):
         os.makedirs(
             os.path.join(self.savepath, "val", f"{self.global_step}"), exist_ok=True
         )
-        metrics = self.compute_metrics(outputs, prefix=f"val/{self.global_step}/")
+        metrics = self.compute_metrics(outputs, prefix=f"val_{self.global_step}_")
 
         if metrics is None:
             return
