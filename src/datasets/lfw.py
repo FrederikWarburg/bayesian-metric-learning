@@ -18,7 +18,7 @@ class TrainDataset(data.Dataset):
             ),
         ])
         print(f"lfw root = {root}")
-        data = torchvision.datasets.LFWPeople(root, split="train", download=False)
+        data = torchvision.datasets.LFWPeople(root, split="train", download=True)
 
         self.targets = np.array(data.targets)
         self.image_paths = data.data
@@ -81,7 +81,7 @@ class TestDataset(data.Dataset):
         print(f"lfw root = {root}")
 
         self.data = torchvision.datasets.LFWPeople(
-            root, split="test", download=False, transform=transform
+            root, split="test", download=True, transform=transform
         )
 
     def __len__(self) -> int:
