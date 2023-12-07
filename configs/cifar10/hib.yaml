@@ -20,7 +20,7 @@ margin : 0.7
 distance : "euclidean"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : "/scratch/toskov/data/
 dataset : "cifar10"
 batch_size : 256
 split_query_database : False

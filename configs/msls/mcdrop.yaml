@@ -24,7 +24,7 @@ distance : "euclidean"
 type_of_triplets : "all"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : "/scratch/toskov/data/
 dataset : "msls"
 batch_size : 64
 split_query_database : False

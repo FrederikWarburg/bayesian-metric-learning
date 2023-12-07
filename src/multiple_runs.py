@@ -32,18 +32,21 @@ def parse_args(cfg_path: str, seed: int) -> Tuple[DotMap, argparse.Namespace]:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_type", type=str, default="fashionmnist")
+    arg = parser.parse_args()
 
-    run_training(parse_args("../configs/fashionmnist/deterministic.yaml", 1))
-    run_training(parse_args("../configs/fashionmnist/deterministic.yaml", 2))
-    run_training(parse_args("../configs/fashionmnist/deterministic.yaml", 3))
-    run_training(parse_args("../configs/fashionmnist/deterministic.yaml", 4))
-    run_training(parse_args("../configs/fashionmnist/deterministic.yaml", 5))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 1))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 2))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 3))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 4))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 5))
 
-    run_training(parse_args("../configs/fashionmnist/laplace_posthoc_arccos_fix.yaml", 42))
-    run_training(parse_args("../configs/fashionmnist/laplace_online_arccos_fix.yaml", 42))
+    run_training(*parse_args(f"../configs/{arg.data_type}/laplace_posthoc_arccos_fix.yaml", 42))
+    run_training(*parse_args(f"../configs/{arg.data_type}/laplace_online_arccos_fix.yaml", 42))
 
-    run_training(parse_args("../configs/fashionmnist/mcdrop.yaml", 42))
-    run_training(parse_args("../configs/fashionmnist/pfe.yaml", 42))
+    run_training(*parse_args(f"../configs/{arg.data_type}/mcdrop.yaml", 42))
+    run_training(*parse_args(f"../configs/{arg.data_type}/pfe.yaml", 42))
 
-    run_training(parse_args("../configs/fashionmnist/deepensemble.yaml", 42))
+    run_training(*parse_args(f"../configs/{arg.data_type}/deepensemble.yaml", 42))
 
