@@ -17,7 +17,8 @@ class TrainDataset(data.Dataset):
                  mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
             ),
         ])
-        data = torchvision.datasets.LFWPeople(root, split="train", download=True)
+        print(f"lfw root = {root}")
+        data = torchvision.datasets.LFWPeople(root, split="train", download=False)
 
         self.targets = np.array(data.targets)
         self.image_paths = data.data
@@ -77,8 +78,10 @@ class TestDataset(data.Dataset):
              ),
         ])
 
+        print(f"lfw root = {root}")
+
         self.data = torchvision.datasets.LFWPeople(
-            root, split="test", download=True, transform=transform
+            root, split="test", download=False, transform=transform
         )
 
     def __len__(self) -> int:
