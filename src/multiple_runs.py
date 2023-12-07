@@ -1,9 +1,9 @@
 import argparse
 from typing import Tuple
 
-from dotmap import DotMap
-
+import wandb
 import yaml
+from dotmap import DotMap
 
 from run import main as run_training
 
@@ -37,16 +37,27 @@ if __name__ == '__main__':
     arg = parser.parse_args()
 
     run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 1))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 2))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 3))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 4))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 5))
+    wandb.finish()
+    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 42))
+    wandb.finish()
 
     run_training(*parse_args(f"../configs/{arg.data_type}/laplace_posthoc_arccos_fix.yaml", 42))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/laplace_online_arccos_fix.yaml", 42))
+    wandb.finish()
 
     run_training(*parse_args(f"../configs/{arg.data_type}/mcdrop.yaml", 42))
+    wandb.finish()
     run_training(*parse_args(f"../configs/{arg.data_type}/pfe.yaml", 42))
+    wandb.finish()
 
     run_training(*parse_args(f"../configs/{arg.data_type}/deepensemble.yaml", 42))
-
+    wandb.finish()
