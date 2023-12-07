@@ -19,6 +19,7 @@ def parse_args(cfg_path: str, seed: int) -> Tuple[DotMap, argparse.Namespace]:
     parser.add_argument("--seed", default=seed, type=int, help="seed")
     parser.add_argument("--validate-only", action='store_true', help="only validate")
     parser.add_argument("--resume_from_checkpoint", default=None, type=str, help="resume from checkpoint")
+    parser.add_argument("--data_type", type=str, default="fashionmnist") # Needs to be here to not break everything
     args = parser.parse_args()
     config_path = args.config
 
@@ -31,33 +32,38 @@ def parse_args(cfg_path: str, seed: int) -> Tuple[DotMap, argparse.Namespace]:
     return config, args
 
 
-if __name__ == '__main__':
+def parse_data_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_type", type=str, default="fashionmnist")
     arg = parser.parse_args()
 
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 1))
+    return arg.data_type
+
+if __name__ == '__main__':
+    dtype = parse_data_arg()
+
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 1))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 2))
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 2))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 3))
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 3))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 4))
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 4))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 5))
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 5))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/deterministic.yaml", 42))
+    run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 42))
     wandb.finish()
 
-    run_training(*parse_args(f"../configs/{arg.data_type}/laplace_posthoc_arccos_fix.yaml", 42))
+    run_training(*parse_args(f"../configs/{dtype}/laplace_posthoc_arccos_fix.yaml", 42))
     wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/laplace_online_arccos_fix.yaml", 42))
-    wandb.finish()
-
-    run_training(*parse_args(f"../configs/{arg.data_type}/mcdrop.yaml", 42))
-    wandb.finish()
-    run_training(*parse_args(f"../configs/{arg.data_type}/pfe.yaml", 42))
+    run_training(*parse_args(f"../configs/{dtype}/laplace_online_arccos_fix.yaml", 42))
     wandb.finish()
 
-    run_training(*parse_args(f"../configs/{arg.data_type}/deepensemble.yaml", 42))
+    run_training(*parse_args(f"../configs/{dtype}/mcdrop.yaml", 42))
+    wandb.finish()
+    run_training(*parse_args(f"../configs/{dtype}/pfe.yaml", 42))
+    wandb.finish()
+
+    run_training(*parse_args(f"../configs/{dtype}/deepensemble.yaml", 42))
     wandb.finish()
