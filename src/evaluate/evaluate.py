@@ -12,7 +12,7 @@ def evaluate(ranks, pidxs):
     if ranks is None:
         return np.zeros(3), np.zeros(4)
 
-    mAPs = [mapk(ranks, pidxs, k=k) for k in [5, 10, 20]]
+    mAPs = [mapk(ranks, pidxs, k=k) for k in [1, 5, 10, 20]]
     recalls = recall(ranks, pidxs, ks=[1, 5, 10, 20])
 
     return {"map": mAPs, "recall": recalls}
