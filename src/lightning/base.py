@@ -310,7 +310,7 @@ class Base(pl.LightningModule):
         os.makedirs(self.savepath, exist_ok=True)
         with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
             json.dump(metrics, file)
-        wandb.save(os.path.join(self.savepath, "metrics.json"))
+        wandb.save(os.path.abspath(os.path.join(self.savepath, "metrics.json")), "/")
 
         # dump to csv to easy cp to google drive
         with open(os.path.join(self.savepath, "metrics.csv"), "w") as f:
@@ -326,7 +326,7 @@ class Base(pl.LightningModule):
                         f.write("%s\n" % (metrics[key][i]))
                 else:
                     f.write("%s\n" % (metrics[key]))
-        wandb.save(os.path.join(self.savepath, "metrics.csv"))
+        wandb.save(os.path.abspath(os.path.join(self.savepath, "metrics.csv")), "/")
 
         # if la remove the sampled weights at the end of the validation
         if hasattr(self, "nn_weight_samples"):

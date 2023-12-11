@@ -96,7 +96,7 @@ def plot_sparsification_curve(targets, pidxs, z_muQ, z_sigmaQ, z_muDb, z_sigmaDb
 
     # Save figure
     fig.savefig(os.path.join(path, f"{prefix}sparsification_curve.png"))
-    wandb.save(os.path.join(path, f"{prefix}sparsification_curve.png"))
+    wandb.save(os.path.abspath(os.path.join(path, f"{prefix}sparsification_curve.png")), "/")
 
     return float(ausc), accuracies
 
@@ -125,4 +125,4 @@ def save_data(accuracies, path, prefix):
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}acc.json"), "w") as f:
         json.dump(accuracies, f)
-    wandb.save(os.path.join(path, "figure_data", f"{prefix}acc.json"))
+    wandb.save(os.path.abspath(os.path.join(path, "figure_data", f"{prefix}acc.json")), "/")

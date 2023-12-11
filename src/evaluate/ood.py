@@ -78,7 +78,7 @@ def plot_ood(mu_id, var_id, mu_ood, var_ood, vis_path, prefix):
     plot_histogram(var_ood, color="blue", ax=ax[1])
     ax[0].legend()
     fig.savefig(os.path.join(vis_path, f"{prefix}ood_comparison.png"))
-    wandb.save(os.path.join(vis_path, f"{prefix}ood_comparison.png"))
+    wandb.save(os.path.abspath(os.path.join(vis_path, f"{prefix}ood_comparison.png")), "/")
     return fig, ax
 
 
@@ -124,7 +124,7 @@ def plot_prc(pred, target, vis_path, prefix):
     plt.close()
     plt.cla()
     plt.clf()
-    wandb.save(os.path.join(vis_path, f"{prefix}ood_precision_recall_curve.png"))
+    wandb.save(os.path.abspath(os.path.join(vis_path, f"{prefix}ood_precision_recall_curve.png")), "/")
 
 
 def plot_roc(pred, target, vis_path, prefix):
@@ -143,7 +143,7 @@ def plot_roc(pred, target, vis_path, prefix):
     plt.close()
     plt.cla()
     plt.clf()
-    wandb.save(os.path.join(vis_path, f"{prefix}ood_roc_curve.png"))
+    wandb.save(os.path.abspath(os.path.join(vis_path, f"{prefix}ood_roc_curve.png")), "/")
 
 
 def save_data(pred, target, path, prefix):
@@ -154,4 +154,4 @@ def save_data(pred, target, path, prefix):
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}ood_curves.json"), "w") as f:
         json.dump(data, f)
-    wandb.save(os.path.join(path, "figure_data", f"{prefix}ood_curves.json"))
+    wandb.save(os.path.abspath(os.path.join(path, "figure_data", f"{prefix}ood_curves.json")), "/")
