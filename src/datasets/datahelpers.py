@@ -58,7 +58,7 @@ def default_loader(path):
 
 
 def imresize(img, imsize):
-    img.thumbnail((imsize, imsize), Image.ANTIALIAS)
+    img.thumbnail((imsize, imsize), Image.LANCZOS)
     return img
 
 
