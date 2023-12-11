@@ -10,6 +10,8 @@ import os
 
 from utils.knn import FaissKNeighbors
 
+import wandb
+
 sns.set()
 
 
@@ -152,6 +154,7 @@ def plot_calibration_curve(acc, confidences, path, prefix, bins=10):
     # Save dir
     fig.savefig(os.path.join(path, f"{prefix}_calibration_curve.png"))
     plt.close(fig)
+    wandb.save(os.path.join(path, f"{prefix}_calibration_curve.png"))
 
 
 def save_data(acc, confidences, targets, bin_sizes, path, prefix):
@@ -164,3 +167,4 @@ def save_data(acc, confidences, targets, bin_sizes, path, prefix):
     os.makedirs(os.path.join(path, "figure_data"), exist_ok=True)
     with open(os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"), "w") as f:
         json.dump(data, f)
+    wandb.save(os.path.join(path, "figure_data", f"{prefix}_calibration_curve.json"))

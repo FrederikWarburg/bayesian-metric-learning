@@ -26,6 +26,8 @@ import json
 import os
 import csv
 
+import wandb
+
 
 class Base(pl.LightningModule):
     def __init__(self, args, savepath, seed):
@@ -273,7 +275,7 @@ class Base(pl.LightningModule):
         if metrics is None:
             return
 
-        for i, k in enumerate([5, 10, 20]):
+        for i, k in enumerate([1, 5, 10, 20]):
             self.log("val_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
         for i, k in enumerate([1, 5, 10, 20]):
@@ -294,7 +296,7 @@ class Base(pl.LightningModule):
         if metrics is None:
             return
 
-        for i, k in enumerate([5, 10, 20]):
+        for i, k in enumerate([1, 5, 10, 20]):
             self.log("test_map/map@{}".format(k), metrics["map"][i], prog_bar=True)
 
         for i, k in enumerate([1, 5, 10, 20]):
@@ -308,6 +310,7 @@ class Base(pl.LightningModule):
         os.makedirs(self.savepath, exist_ok=True)
         with open(os.path.join(self.savepath, "metrics.json"), "w") as file:
             json.dump(metrics, file)
+        wandb.save(os.path.join(self.savepath, "metrics.json"))
 
         # dump to csv to easy cp to google drive
         with open(os.path.join(self.savepath, "metrics.csv"), "w") as f:
@@ -319,10 +322,11 @@ class Base(pl.LightningModule):
                     for i, k in enumerate([1, 5, 10, 20]):
                         f.write("%s\n" % (metrics[key][i]))
                 elif key == "map":
-                    for i, k in enumerate([5, 10, 20]):
+                    for i, k in enumerate([1, 5, 10, 20]):
                         f.write("%s\n" % (metrics[key][i]))
                 else:
                     f.write("%s\n" % (metrics[key]))
+        wandb.save(os.path.join(self.savepath, "metrics.csv"))
 
         # if la remove the sampled weights at the end of the validation
         if hasattr(self, "nn_weight_samples"):
