@@ -57,10 +57,6 @@ if __name__ == '__main__':
         run_training(*parse_args(f"../configs/{dtype}/deepensemble.yaml", 42))
         wandb.finish()
 
-    if con.dataset not in ["msls", "lfw"]:
-        run_training(*parse_args(f"../configs/{dtype}/hib.yaml", 42))
-        wandb.finish()
-
     run_training(*parse_args(f"../configs/{dtype}/deterministic.yaml", 42))
     wandb.finish()
     run_training(*parse_args(f"../configs/{dtype}/pfe.yaml", 42))
@@ -73,3 +69,7 @@ if __name__ == '__main__':
 
     run_training(*parse_args(f"../configs/{dtype}/mcdrop.yaml", 42))
     wandb.finish()
+
+    if con.dataset not in ["msls", "lfw"]:
+        run_training(*parse_args(f"../configs/{dtype}/hib.yaml", 42))
+        wandb.finish()

@@ -4,8 +4,12 @@
 # model specific
 model : "hib"
 resume : ""
-arch : "linear"
-latent_dim : 3
+arch : "resnet50"
+pool : "gem"
+whitening : True
+pretrained : True
+latent_dim : 512
+type_of_triplets : "semihard"
 kl_weight : 1.0e-4
 
 # logging
@@ -13,10 +17,10 @@ check_val_every_n_epoch: 1
 
 # training
 train : True
-epochs : 20
-lr : 0.00001
+epochs : 10
+lr : 0.001
 loss : "contrastive"
-margin : 0.7
+margin : 1
 distance : "euclidean"
 
 # data specific
