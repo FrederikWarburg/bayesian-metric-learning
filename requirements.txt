@@ -12,12 +12,14 @@ black
 isort
 python-dotenv
 
-torch --extra-index-url https://download.pytorch.org/whl/cpu
-torchvision --extra-index-url https://download.pytorch.org/whl/cpu
-pytorch-lightning
-torchmetrics==0.5.1  # https://github.com/Lightning-AI/lightning/issues/4237 removed 
+--extra-index-url https://download.pytorch.org/whl/cu117
 
-pytorch-metric-learning
+torch==1.13.0+cu117
+torchvision==0.14.0+cu117
+pytorch-lightning==1.9.0
+torchmetrics==0.7.0  # https://github.com/Lightning-AI/lightning/issues/4237 removed 
+
+pytorch-metric-learning==1.7.3
 faiss-cpu
 
 git+https://github.com/IlMioFrizzantinoAmabile/stochman.git#egg=stochman

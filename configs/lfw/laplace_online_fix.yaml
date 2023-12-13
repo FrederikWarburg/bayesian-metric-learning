@@ -29,7 +29,7 @@ distance : "euclidean"
 # train_n_samples : 10
 
 # data specific
-data_dir : "/work3/s174433/datasets/"
+data_dir : "/scratch/toskov/data/"
 dataset : "lfw"
 batch_size : 64
 split_query_database : False

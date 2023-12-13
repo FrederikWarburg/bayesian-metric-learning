@@ -28,7 +28,7 @@ margin : 1
 distance : "euclidean"
 
 # data specific
-data_dir : "/home/warburg/data/"
+data_dir : "/scratch/toskov/data/"
 dataset : "cub200"
 batch_size : 64
 split_query_database : False

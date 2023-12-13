@@ -71,7 +71,7 @@ def main(
     # more standard image retrieval, where we have descrete labels.
     if config.dataset in ("msls", "dag"):
         data_module = PlaceRecognitionDataModule(**config.toDict())
-    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw", "cifar10"):
+    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw", "cifar10", "digiface1m"):
         data_module = ImageRetrievalDataModule(**config.toDict())
     else:
         raise NotImplementedError(f"Dataset {config.dataset} not implemented")
@@ -88,7 +88,7 @@ def main(
 
     # setup logger
     os.makedirs("../logs", exist_ok=True)
-    logger = WandbLogger(save_dir=f"../logs", name=name, entity="laplace-metric-learning")
+    logger = WandbLogger(save_dir=f"../logs", name=name, entity="cs433-jal", project="project-2")
 
     # lightning trainer
     checkpoint_callback = ModelCheckpoint(

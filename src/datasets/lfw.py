@@ -17,6 +17,7 @@ class TrainDataset(data.Dataset):
                  mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
             ),
         ])
+        print(f"lfw root = {root}")
         data = torchvision.datasets.LFWPeople(root, split="train", download=True)
 
         self.targets = np.array(data.targets)
@@ -76,6 +77,8 @@ class TestDataset(data.Dataset):
                  mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
              ),
         ])
+
+        print(f"lfw root = {root}")
 
         self.data = torchvision.datasets.LFWPeople(
             root, split="test", download=True, transform=transform
