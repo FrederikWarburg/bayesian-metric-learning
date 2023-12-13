@@ -71,7 +71,7 @@ def main(
     # more standard image retrieval, where we have descrete labels.
     if config.dataset in ("msls", "dag"):
         data_module = PlaceRecognitionDataModule(**config.toDict())
-    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw", "cifar10"):
+    elif config.dataset in ("mnist", "fashionmnist", "cub200", "lfw", "cifar10", "digiface1m"):
         data_module = ImageRetrievalDataModule(**config.toDict())
     else:
         raise NotImplementedError(f"Dataset {config.dataset} not implemented")

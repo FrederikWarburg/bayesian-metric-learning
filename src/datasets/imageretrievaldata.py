@@ -37,7 +37,10 @@ class ImageRetrievalDataModule(pl.LightningDataModule):
         elif self.dataset == "lfw":
             from datasets.lfw import TrainDataset, TestDataset
             from datasets.cub200 import TestDataset as OODDataset
-
+        elif self.dataset == "digiface1m":
+            from datasets.digiface1m import TrainDataset, TestDataset
+            from datasets.lfw import TestDataset as OODDataset
+            
         if stage == "fit":
             self.train_dataset = TrainDataset(self.data_dir)
             self.val_dataset = TestDataset(self.data_dir)
